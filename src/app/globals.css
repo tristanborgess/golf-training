@@ -1,0 +1,246 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Light Mode Theme (HSL) */
+    --background: hsl(40 100% 98%);
+    --foreground: hsl(215 10% 20%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(215 10% 20%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(215 10% 20%);
+    --primary: hsl(40.8589 100% 68.0392%);
+    --primary-foreground: hsl(0 0% 7.8431%);
+    --secondary: hsl(163 20% 35%);
+    --secondary-foreground: hsl(0 0% 100%);
+    --muted: hsl(43 36% 92%);
+    --muted-foreground: hsl(215 15% 45%);
+    --accent: hsl(163 40% 70%);
+    --accent-foreground: hsl(215 10% 20%);
+    --destructive: hsl(0 72% 51%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --border: hsl(214 32% 91%);
+    --input: hsl(214 32% 91%);
+    --ring: hsl(40 77% 52%);
+    --chart-1: hsl(40 77% 52%);
+    --chart-2: hsl(163 20% 35%);
+    --chart-3: hsl(215 15% 45%);
+    --chart-4: hsl(60 50% 85%);
+    --chart-5: hsl(163 40% 70%);
+    --sidebar-background: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(215 10% 20%);
+    --sidebar-primary: hsl(40 77% 52%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(163 40% 70%);
+    --sidebar-accent-foreground: hsl(215 10% 20%);
+    --sidebar-border: hsl(214 32% 91%);
+    --sidebar-ring: hsl(40 77% 52%);
+    --radius: 0.5rem;
+    /* Typography (preserve project fonts) */
+    --font-sans:
+      "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-serif: "Plantin MT Pro", Georgia, serif;
+    --font-mono: var(--font-recursive), "SF Mono", Monaco, monospace;
+    /* Skeleton loader pulse */
+    --line-pulse: oklch(0.96 0.003 247.86);
+    /* Shadows */
+    --shadow-x: 0;
+    --shadow-y: 0.1rem;
+    --shadow-blur: 0.5rem;
+    --shadow-spread: 0;
+    --shadow-opacity: 0.1;
+    --shadow-color: hsl(220, 10%, 10%);
+    --shadow-2xs: 0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.05);
+    --shadow-xs: 0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.05);
+    --shadow-sm:
+      0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.1), 0 1px 2px -1px
+      hsl(220 10% 10% / 0.1);
+    --shadow:
+      0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.1), 0 1px 2px -1px
+      hsl(220 10% 10% / 0.1);
+    --shadow-md:
+      0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.1), 0 2px 4px -1px
+      hsl(220 10% 10% / 0.1);
+    --shadow-lg:
+      0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.1), 0 4px 6px -1px
+      hsl(220 10% 10% / 0.1);
+    --shadow-xl:
+      0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.1), 0 8px 10px -1px
+      hsl(220 10% 10% / 0.1);
+    --shadow-2xl: 0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.25);
+    /* Letter spacing */
+    --tracking-normal: 0;
+    /* Bitcoin Connect styling variables */
+    --bc-color-brand: #d4af37;
+    --bc-color-brand-dark: #10281f;
+    --bc-brand-mix: 100%;
+    --bc-color-brand-button-text: #ffffff;
+    --bc-color-brand-button-text-dark: #ffffff;
+  }
+
+  .dark {
+    /* Dark Mode Theme (HSL) */
+    --background: hsl(36 100% 0.9804%);
+    --foreground: hsl(210 20% 96%);
+    --card: hsl(180 5% 7.8431%);
+    --card-foreground: hsl(210 20% 96%);
+    --popover: hsl(220 10% 5%);
+    --popover-foreground: hsl(210 20% 96%);
+    --primary: hsl(39.759 69.1667% 47.0588%);
+    --primary-foreground: hsl(0 0% 1.9608%);
+    --secondary: hsl(220 15% 20%);
+    --secondary-foreground: hsl(210 20% 96%);
+    --muted: hsl(0 0% 13%);
+    --muted-foreground: hsl(215 15% 65%);
+    --accent: hsl(163 20% 35%);
+    --accent-foreground: hsl(210 20% 96%);
+    --destructive: hsl(0 72% 51%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --border: hsl(220 15% 25%);
+    --input: hsl(220 15% 25%);
+    --ring: hsl(40 77% 52%);
+    --chart-1: hsl(40 77% 52%);
+    --chart-2: hsl(163 20% 35%);
+    --chart-3: hsl(215 15% 65%);
+    --chart-4: hsl(220 15% 15%);
+    --chart-5: hsl(163 40% 70%);
+    --sidebar-background: hsl(220 10% 5%);
+    --sidebar-foreground: hsl(210 20% 96%);
+    --sidebar-primary: hsl(40 77% 52%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(163 20% 35%);
+    --sidebar-accent-foreground: hsl(210 20% 96%);
+    --sidebar-border: hsl(220 15% 25%);
+    --sidebar-ring: hsl(40 77% 52%);
+    /* Skeleton loader pulse - dark mode */
+    --line-pulse: oklch(0.26 0.015 264.26);
+    /* Bitcoin Connect dark mode styling variables */
+    --bc-color-brand-dark: #10281f;
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    letter-spacing: var(--tracking-normal);
+  }
+}
+
+@layer utilities {
+  /* Skeleton loader animation - used by Skeleton component */
+  @keyframes linePulse {
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
+  }
+  .line-pulse {
+    background: linear-gradient(
+      90deg,
+      var(--background) 0%,
+      var(--line-pulse) 25%,
+      var(--background) 90%
+    );
+    background-size: 200% 100%;
+    animation: linePulse 1.75s ease-out infinite;
+  }
+  /* Accordion animations */
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  .animate-accordion-down {
+    animation: accordion-down 0.2s ease-out;
+  }
+  .animate-accordion-up {
+    animation: accordion-up 0.2s ease-out;
+  }
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms;
+      animation-iteration-count: 1;
+      transition-duration: 0.01ms;
+    }
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar-background);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --shadow-2xs: var(--shadow-2xs);
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow: var(--shadow);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+
+  --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
+  --tracking-tight: calc(var(--tracking-normal) - 0.025em);
+  --tracking-normal: var(--tracking-normal);
+  --tracking-wide: calc(var(--tracking-normal) + 0.025em);
+  --tracking-wider: calc(var(--tracking-normal) + 0.05em);
+  --tracking-widest: calc(var(--tracking-normal) + 0.1em);
+}
