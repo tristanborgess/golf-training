@@ -123,8 +123,8 @@ bun run dx
 1. **Clone this repository:**
 
    ```bash
-   git clone <repository-url>
-   cd inflacionmexico
+   git clone <repository-url> new_app_name
+   cd new_app_name
    ```
 
 2. **Install dependencies:**
@@ -204,21 +204,26 @@ You can deploy using either the Vercel CLI or GitHub integration. Both workflows
 #### Option A: Vercel CLI (Recommended for quick deployments)
 
 1. **Install Vercel CLI:**
+
    ```bash
    bunx vercel
    ```
 
 2. **Create and link project:**
+
    ```bash
    vercel
    ```
+
    - Follow the prompts to create a new project
    - Link it to your repository
 
 3. **Deploy to production:**
+
    ```bash
    vercel --prod
    ```
+
    This deploys directly to the `main` branch and creates a production deployment.
 
 4. **Get a custom domain:**
@@ -230,22 +235,26 @@ You can deploy using either the Vercel CLI or GitHub integration. Both workflows
 #### Option B: GitHub Integration (Recommended for team workflows)
 
 1. **Push to GitHub:**
+
    ```bash
    git push origin main
    ```
 
 2. **Import to Vercel:**
+
    - Go to [vercel.com](https://vercel.com)
    - Click "Add New Project"
    - Import your GitHub repository
    - Vercel will auto-detect Next.js and configure build settings
 
 3. **Configure (if needed):**
+
    - Build Command: `bun run build` (or `npm run build`)
    - Output Directory: `.next` (default)
    - Install Command: `bun install` (or `npm install`)
 
 4. **Deploy:**
+
    - Click "Deploy"
    - Every push to `main` will automatically deploy to production
    - Your app will be live at `your-app.vercel.app`
