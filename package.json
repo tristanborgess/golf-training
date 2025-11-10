@@ -9,6 +9,8 @@
     "lint": "biome check",
     "format": "biome format --write",
     "test": "bun test",
+    "typecheck": "bunx tsc --noEmit",
+    "prepare": "husky",
     "i18n:sync": "node scripts/i18n-sync.cjs",
     "i18n:watch": "chokidar \"src/**/*.{ts,tsx,js,jsx}\" -i \"src/**/*.d.ts\" -i \"locales/**\" -i \"node_modules/**\" -i \".next/**\" -c \"node scripts/i18n-sync.cjs\"",
     "dx": "concurrently -k -n dev,i18n -c blue,magenta \"bun run dev\" \"bun run i18n:watch\""
@@ -45,7 +47,15 @@
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.2.1",
     "fast-glob": "^3.3.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^15.2.11",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx,json,css,md}": [
+      "biome format --write",
+      "biome check --write"
+    ]
   }
 }

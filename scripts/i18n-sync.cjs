@@ -37,7 +37,7 @@ function readJSON(filePath) {
 function writeJSON(filePath, obj) {
   // Sort keys alphabetically for stable diffs
   const sorted = Object.fromEntries(
-    Object.entries(obj).sort(([a], [b]) => a.localeCompare(b))
+    Object.entries(obj).sort(([a], [b]) => a.localeCompare(b)),
   );
   const json = `${JSON.stringify(sorted, null, 2)}\n`;
 
@@ -195,7 +195,7 @@ async function syncOnce({ silent = false } = {}) {
       console.log(
         `✓ ${path.basename(filePath)}: ${total} key${total !== 1 ? "s" : ""}${
           missing > 0 ? ` (${missing} untranslated)` : ""
-        }`
+        }`,
       );
     }
   }

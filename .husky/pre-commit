@@ -1,0 +1,6 @@
+# 1) Format/fix staged files
+bunx lint-staged
+
+# 2) Full repo lint and types
+bun run lint
+bun run typecheck
