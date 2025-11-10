@@ -185,8 +185,8 @@ src/
 
 ```bash
 # Clone the repo
-git clone <repository-url>
-cd your-new-app
+git clone <repository-url> your-new-app-name
+cd your-new-app-name
 
 # Install dependencies
 bun install
