@@ -75,6 +75,18 @@ bun test          # tests
 bun run lint      # Biome
 ```
 
+## Testing
+
+See `src/lib/utils.test.ts` for an example. Bun's test runner uses Jest-compatible API:
+
+```ts
+import { describe, expect, test } from "bun:test";
+
+test("example", () => {
+  expect(1 + 1).toBe(2);
+});
+```
+
 ## Conventions
 
 - Keys = English phrases; falls back to English
