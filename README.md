@@ -12,7 +12,7 @@ This boilerplate is designed for **micro apps**—small, focused applications th
 - Can be deployed serverlessly
 - Drive traffic to Aureo Bitcoin
 
-Use this starter to ship fast and deploy anywhere (Vercel, Netlify, etc.).
+Use this starter to ship fast and deploy to Vercel.
 
 ## What's Included
 
@@ -199,24 +199,62 @@ bun install
 
 ### 2. Deploy to Vercel
 
-1. **Push to GitHub/GitLab/Bitbucket**
+You can deploy using either the Vercel CLI or GitHub integration. Both workflows are supported.
+
+#### Option A: Vercel CLI (Recommended for quick deployments)
+
+1. **Install Vercel CLI:**
+   ```bash
+   bunx vercel
+   ```
+
+2. **Create and link project:**
+   ```bash
+   vercel
+   ```
+   - Follow the prompts to create a new project
+   - Link it to your repository
+
+3. **Deploy to production:**
+   ```bash
+   vercel --prod
+   ```
+   This deploys directly to the `main` branch and creates a production deployment.
+
+4. **Get a custom domain:**
+   - Go to your project dashboard on [vercel.com](https://vercel.com)
+   - Navigate to Settings → Domains
+   - Add your domain (e.g., `your-app.com`)
+   - Connect it to your production deployment
+
+#### Option B: GitHub Integration (Recommended for team workflows)
+
+1. **Push to GitHub:**
+   ```bash
+   git push origin main
+   ```
 
 2. **Import to Vercel:**
-
    - Go to [vercel.com](https://vercel.com)
    - Click "Add New Project"
-   - Import your repository
-   - Vercel will auto-detect Next.js
+   - Import your GitHub repository
+   - Vercel will auto-detect Next.js and configure build settings
 
 3. **Configure (if needed):**
-
    - Build Command: `bun run build` (or `npm run build`)
    - Output Directory: `.next` (default)
    - Install Command: `bun install` (or `npm install`)
 
 4. **Deploy:**
    - Click "Deploy"
+   - Every push to `main` will automatically deploy to production
    - Your app will be live at `your-app.vercel.app`
+
+5. **Add custom domain:**
+   - In project Settings → Domains, add your domain
+   - Connect it to the production deployment
+
+**Note:** Both workflows work great. Use CLI for quick one-off deployments, or GitHub integration for automatic deployments on every push (like we do for our marketing site and main app).
 
 ### 3. Customize Translations
 
