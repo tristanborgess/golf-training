@@ -1,6 +1,10 @@
 {
-  "Micro App Boilerplate!": "Micro App Boilerplate!",
-  "Minimal Next.js (App Router) + shadcn/ui + theming + i18n!!!": "Minimal Next.js (App Router) + shadcn/ui + theming + i18n!!!",
-  "Use this starter to build tiny, serverless-friendly apps without databases, users, or auth. Ship fast, deploy anywhere, and drive traffic to Aureo Bitcoin.": "Use this starter to build tiny, serverless-friendly apps without databases, users, or auth. Ship fast, deploy anywhere, and drive traffic to Aureo Bitcoin.",
-  "Visit Aureo Bitcoin NOW": "Visit Aureo Bitcoin NOW"
+  "Micro App Boilerplate": "Micro App Boilerplate",
+  "Minimal Next.js (App Router) + shadcn/ui + theming + i18n": "Minimal Next.js (App Router) + shadcn/ui + theming + i18n",
+  "Use this starter to build tiny, serverless-friendly apps without databases, users, or auth. Ship fast, deploy anywhere.": "Use this starter to build tiny, serverless-friendly apps without databases, users, or auth. Ship fast, deploy anywhere.",
+  "View on GitHub": "View on GitHub",
+  "Created by": "Created by",
+  "for": "for",
+  "at": "at",
+  "in CDMX": "in CDMX"
 }

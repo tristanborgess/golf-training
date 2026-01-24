@@ -64,9 +64,7 @@ export async function generateMetadata({
   await getMessages({ locale });
 
   const title =
-    locale === "es"
-      ? "Boilerplate de Micro Apps | Aureo"
-      : "Micro App Boilerplate | Aureo";
+    locale === "es" ? "Boilerplate de Micro Apps" : "Micro App Boilerplate";
   const description =
     locale === "es"
       ? "Starter minimal para construir micro apps con Next.js, shadcn/ui, tema y i18n."
@@ -75,7 +73,6 @@ export async function generateMetadata({
   return {
     title,
     description,
-    authors: [{ name: "Aureo" }],
     icons: {
       icon: "/favicon.ico",
     },
@@ -84,7 +81,6 @@ export async function generateMetadata({
       description,
       type: "website",
       locale: locale === "es" ? "es_MX" : "en_US",
-      siteName: "Aureo Micro Apps",
     },
     twitter: {
       card: "summary_large_image",

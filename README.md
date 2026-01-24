@@ -1,8 +1,8 @@
-# Aureo Micro App Boilerplate
+# Vibe Code Boilerplate
 
 Next.js App Router micro-app boilerplate with shadcn/ui, Tailwind v4, next-intl (English-as-source), next-themes, and fonts included.
 
-**Purpose:** Build tiny, serverless-friendly micro apps without databases, users, or auth. Ship fast and drive traffic to Aureo Bitcoin.
+**Purpose:** Build tiny, serverless-friendly micro apps without databases, users, or auth. Ship fast, deploy anywhere.
 
 ## Features
 
@@ -15,7 +15,7 @@ Next.js App Router micro-app boilerplate with shadcn/ui, Tailwind v4, next-intl 
 ## Quick Start
 
 ```bash
-git clone git@github.com:SwapidoApp/micro-app-boilerplate.git your_new_app_name
+git clone https://github.com/SwapidoApp/vibe-code-boilerplate.git your_new_app_name
 cd your_new_app_name
 bun install
 bun run dx   # dev server + i18n watcher
@@ -92,3 +92,9 @@ test("example", () => {
 - Keys = English phrases; falls back to English
 - Prefer HSL tokens; avoid inline colors
 - Pre-commit runs lint-staged, then full lint & typecheck
+
+---
+
+## Credits
+
+Created by [Aureo](https://aureobitcoin.com) for **Bitcoin Day** at [La Casa de Satoshi](https://lacasadesatoshi.io) in Mexico City (CDMX).

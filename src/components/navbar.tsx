@@ -1,7 +1,6 @@
 "use client";
 
-import { Check, Globe } from "lucide-react";
-import Image from "next/image";
+import { Check, Globe, Layers } from "lucide-react";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -28,15 +27,8 @@ export function Navbar() {
       <div className="container mx-auto max-w-4xl px-6">
         <div className="flex h-16 items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Image
-              src="/logo/Sun.svg"
-              alt="Aureo"
-              width={32}
-              height={32}
-              className="h-8 w-8"
-              priority
-            />
-            <span className="text-lg font-semibold">MicroApp Boilerplate</span>
+            <Layers className="h-6 w-6 text-primary" />
+            <span className="text-lg font-semibold">MicroApp</span>
           </Link>
 
           <div className="flex items-center gap-2">

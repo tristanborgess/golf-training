@@ -2,39 +2,39 @@
 
 @layer base {
   :root {
-    /* Light Mode Theme (HSL) */
-    --background: hsl(40 100% 98%);
-    --foreground: hsl(215 10% 20%);
+    /* Light Mode Theme - Slate/Blue */
+    --background: hsl(210 20% 98%);
+    --foreground: hsl(222 47% 11%);
     --card: hsl(0 0% 100%);
-    --card-foreground: hsl(215 10% 20%);
+    --card-foreground: hsl(222 47% 11%);
     --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(215 10% 20%);
-    --primary: hsl(40.8589 100% 68.0392%);
-    --primary-foreground: hsl(0 0% 7.8431%);
-    --secondary: hsl(163 20% 35%);
-    --secondary-foreground: hsl(0 0% 100%);
-    --muted: hsl(43 36% 92%);
-    --muted-foreground: hsl(215 15% 45%);
-    --accent: hsl(163 40% 70%);
-    --accent-foreground: hsl(215 10% 20%);
+    --popover-foreground: hsl(222 47% 11%);
+    --primary: hsl(221 83% 53%);
+    --primary-foreground: hsl(210 40% 98%);
+    --secondary: hsl(210 40% 96%);
+    --secondary-foreground: hsl(222 47% 11%);
+    --muted: hsl(210 40% 96%);
+    --muted-foreground: hsl(215 16% 47%);
+    --accent: hsl(210 40% 96%);
+    --accent-foreground: hsl(222 47% 11%);
     --destructive: hsl(0 72% 51%);
-    --destructive-foreground: hsl(0 0% 100%);
+    --destructive-foreground: hsl(210 40% 98%);
     --border: hsl(214 32% 91%);
     --input: hsl(214 32% 91%);
-    --ring: hsl(40 77% 52%);
-    --chart-1: hsl(40 77% 52%);
-    --chart-2: hsl(163 20% 35%);
-    --chart-3: hsl(215 15% 45%);
-    --chart-4: hsl(60 50% 85%);
-    --chart-5: hsl(163 40% 70%);
+    --ring: hsl(221 83% 53%);
+    --chart-1: hsl(221 83% 53%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
     --sidebar-background: hsl(0 0% 100%);
-    --sidebar-foreground: hsl(215 10% 20%);
-    --sidebar-primary: hsl(40 77% 52%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(163 40% 70%);
-    --sidebar-accent-foreground: hsl(215 10% 20%);
+    --sidebar-foreground: hsl(222 47% 11%);
+    --sidebar-primary: hsl(221 83% 53%);
+    --sidebar-primary-foreground: hsl(210 40% 98%);
+    --sidebar-accent: hsl(210 40% 96%);
+    --sidebar-accent-foreground: hsl(222 47% 11%);
     --sidebar-border: hsl(214 32% 91%);
-    --sidebar-ring: hsl(40 77% 52%);
+    --sidebar-ring: hsl(221 83% 53%);
     --radius: 0.5rem;
     /* Typography (preserve project fonts) */
     --font-sans:
@@ -70,52 +70,44 @@
     --shadow-2xl: 0 0.1rem 0.5rem 0 hsl(220 10% 10% / 0.25);
     /* Letter spacing */
     --tracking-normal: 0;
-    /* Bitcoin Connect styling variables */
-    --bc-color-brand: #d4af37;
-    --bc-color-brand-dark: #10281f;
-    --bc-brand-mix: 100%;
-    --bc-color-brand-button-text: #ffffff;
-    --bc-color-brand-button-text-dark: #ffffff;
   }
 
   .dark {
-    /* Dark Mode Theme (HSL) */
-    --background: hsl(36 100% 0.9804%);
-    --foreground: hsl(210 20% 96%);
-    --card: hsl(180 5% 7.8431%);
-    --card-foreground: hsl(210 20% 96%);
-    --popover: hsl(220 10% 5%);
-    --popover-foreground: hsl(210 20% 96%);
-    --primary: hsl(39.759 69.1667% 47.0588%);
-    --primary-foreground: hsl(0 0% 1.9608%);
-    --secondary: hsl(220 15% 20%);
-    --secondary-foreground: hsl(210 20% 96%);
-    --muted: hsl(0 0% 13%);
-    --muted-foreground: hsl(215 15% 65%);
-    --accent: hsl(163 20% 35%);
-    --accent-foreground: hsl(210 20% 96%);
-    --destructive: hsl(0 72% 51%);
-    --destructive-foreground: hsl(0 0% 100%);
-    --border: hsl(220 15% 25%);
-    --input: hsl(220 15% 25%);
-    --ring: hsl(40 77% 52%);
-    --chart-1: hsl(40 77% 52%);
-    --chart-2: hsl(163 20% 35%);
-    --chart-3: hsl(215 15% 65%);
-    --chart-4: hsl(220 15% 15%);
-    --chart-5: hsl(163 40% 70%);
-    --sidebar-background: hsl(220 10% 5%);
-    --sidebar-foreground: hsl(210 20% 96%);
-    --sidebar-primary: hsl(40 77% 52%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(163 20% 35%);
-    --sidebar-accent-foreground: hsl(210 20% 96%);
-    --sidebar-border: hsl(220 15% 25%);
-    --sidebar-ring: hsl(40 77% 52%);
+    /* Dark Mode Theme - Slate/Blue */
+    --background: hsl(222 47% 5%);
+    --foreground: hsl(210 40% 98%);
+    --card: hsl(222 47% 8%);
+    --card-foreground: hsl(210 40% 98%);
+    --popover: hsl(222 47% 8%);
+    --popover-foreground: hsl(210 40% 98%);
+    --primary: hsl(217 91% 60%);
+    --primary-foreground: hsl(222 47% 5%);
+    --secondary: hsl(217 33% 17%);
+    --secondary-foreground: hsl(210 40% 98%);
+    --muted: hsl(217 33% 17%);
+    --muted-foreground: hsl(215 20% 65%);
+    --accent: hsl(217 33% 17%);
+    --accent-foreground: hsl(210 40% 98%);
+    --destructive: hsl(0 62% 50%);
+    --destructive-foreground: hsl(210 40% 98%);
+    --border: hsl(217 33% 20%);
+    --input: hsl(217 33% 20%);
+    --ring: hsl(224 76% 48%);
+    --chart-1: hsl(221 83% 53%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
+    --sidebar-background: hsl(222 47% 5%);
+    --sidebar-foreground: hsl(210 40% 98%);
+    --sidebar-primary: hsl(217 91% 60%);
+    --sidebar-primary-foreground: hsl(222 47% 5%);
+    --sidebar-accent: hsl(217 33% 17%);
+    --sidebar-accent-foreground: hsl(210 40% 98%);
+    --sidebar-border: hsl(217 33% 20%);
+    --sidebar-ring: hsl(224 76% 48%);
     /* Skeleton loader pulse - dark mode */
     --line-pulse: oklch(0.26 0.015 264.26);
-    /* Bitcoin Connect dark mode styling variables */
-    --bc-color-brand-dark: #10281f;
   }
 }
 
