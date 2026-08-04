@@ -1,0 +1,4 @@
+[install]
+# Supply-chain guard (Shai-Hulud class attacks): only install package versions
+# published at least 7 days ago, giving the registry time to pull malware.
+minimumReleaseAge = 604800
