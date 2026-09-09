@@ -1,14 +1,14 @@
 {
-  "name": "vibe-code-boilerplate",
+  "name": "range-notes",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
-    "build": "next build",
-    "start": "next start",
+    "build": "next build && node scripts/prepare-offline.mjs",
+    "start": "bun scripts/serve-static.ts",
     "lint": "biome check",
     "format": "biome format --write",
-    "test": "bun test",
+    "test": "bun test src",
     "typecheck": "bunx tsc --noEmit",
     "prepare": "husky install",
     "i18n:sync": "node scripts/i18n-sync.cjs",
@@ -35,10 +35,13 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@babel/parser": "^7.28.5",
     "@babel/traverse": "^7.28.5",
     "@biomejs/biome": "2.2.0",
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",
+    "@types/bun": "^1.4.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
