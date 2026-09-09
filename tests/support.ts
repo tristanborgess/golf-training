@@ -1,0 +1,26 @@
+export const clubs = [
+  "Driver",
+  "3-wood",
+  "5-wood",
+  "3H / 4H hybrid",
+  "4-iron",
+  "5-iron",
+  "6-iron",
+  "7-iron",
+  "8-iron",
+  "9-iron",
+  "Pitching wedge",
+  "Gap wedge",
+  "Sand wedge",
+  "Lob wedge",
+  "Putter",
+];
+export const drawingNamesForTest = [
+  "Stance & ball",
+  "Face-on",
+  "Down the line",
+  "Swing sequence",
+  "Face & path",
+  "Clean contact",
+  "Grip",
+];

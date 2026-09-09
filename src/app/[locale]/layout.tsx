@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { ThemeProvider } from "@/components/theme-provider";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
@@ -30,7 +30,7 @@ const switzer = localFont({
       style: "normal",
     },
   ],
-  variable: "--font-sans",
+  variable: "--font-body",
   display: "optional",
 });
 
@@ -47,7 +47,7 @@ const plantin = localFont({
       style: "normal",
     },
   ],
-  variable: "--font-serif",
+  variable: "--font-editorial",
   display: "optional",
 });
 
@@ -64,18 +64,21 @@ export async function generateMetadata({
   await getMessages({ locale });
 
   const title =
-    locale === "es" ? "Boilerplate de Micro Apps" : "Micro App Boilerplate";
+    locale === "es"
+      ? "Range Notes — Un mejor siguiente golpe"
+      : "Range Notes — A better next shot";
   const description =
     locale === "es"
-      ? "Starter minimal para construir micro apps con Next.js, shadcn/ui, tema y i18n."
-      : "Minimal starter to build micro apps with Next.js, shadcn/ui, theme, and i18n.";
+      ? "Prepara tu palo, entiende tu fallo y practica con claridad. Guía de golf bilingüe, para diestros y zurdos, disponible sin conexión."
+      : "Find your setup, understand your miss, and practice with clarity. A bilingual, offline golf guide for right- and left-handed players.";
 
   return {
     title,
     description,
     icons: {
-      icon: "/favicon.ico",
+      icon: "/icon.svg",
     },
+    manifest: "/manifest.webmanifest",
     openGraph: {
       title,
       description,
@@ -110,6 +113,7 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  setRequestLocale(locale);
   const messages = await getMessages({ locale });
 
   return (
@@ -122,8 +126,8 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider
             attribute="class"
-            defaultTheme="system"
-            enableSystem
+            defaultTheme="light"
+            enableSystem={false}
             disableTransitionOnChange
           >
             {children}

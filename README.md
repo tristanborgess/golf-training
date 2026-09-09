@@ -1,100 +1,90 @@
-# Vibe Code Boilerplate
+# Range Notes
 
-Next.js App Router micro-app boilerplate with shadcn/ui, Tailwind v4, next-intl (English-as-source), next-themes, and fonts included.
+A bilingual (English / Spanish) golf reference for beginner-to-intermediate players who know their clubs and want useful guidance between shots at the range. It opens into two actions: **Set up a club** and **Fix a shot**.
 
-**Purpose:** Build tiny, serverless-friendly micro apps without databases, users, or auth. Ship fast, deploy anywhere.
+Range Notes is a static, offline-capable web app. There are no accounts, no database and no analytics provider. Everything you enter (handedness, selected club, personal carry distances, units, appearance) stays in your browser.
 
-## Features
+The approved product specification is in [PRODUCT.md](PRODUCT.md). The implementation record is in [docs/implementation-notes.md](docs/implementation-notes.md). The two research reports in `docs/` are reference material, not instructions.
 
-- **App Router** • **shadcn/ui** • **Tailwind v4** • Dark/Light via `next-themes`
-- **i18n**: English-as-source with key hashing; auto-sync script
-- **HSL theme tokens** in `src/app/globals.css`
-- **Fonts** (Switzer, Plantin MT Pro) prebundled via `localFont`
-- **Husky pre-commit** (lint-staged), Biome, Bun test
+## What it does
 
-## Quick Start
+- **Fifteen clubs**: driver, 3W, 5W, combined 3H/4H, 4–9 irons, PW/GW/SW/LW, putter. Four shared instructional systems with club-specific adjustments. Wedges also get chip, pitch and bunker variants.
+- **Setup guidance** per club: stance, ball position, posture, pressure, grip, tempo, intent and use, plus an editable personal carry and optional qualified reference distances.
+- **Seven technical drawings**, rendered as live SVG with translated labels and correct lead/trail orientation for right- and left-handers: stance & ball (top view), face-on, down the line, five-frame swing sequence, face & path, clean contact (low point), and grip.
+- **Shot diagnosis** that asks start direction and curve separately, defines the terms, covers nine flights, and never reverses what the player literally saw. Contact, driver, chip, bunker, putt, distance and trajectory faults appear only when they apply to the selected club and shot.
+- **One mechanism, one correction, one drill first**; detail, alternatives and direct citations behind disclosures. A methodology page lists every source.
+- **Yards or metres** with metres as the stable canonical unit for saved carries. Per-club editing and a complete bag editor.
+- **Installable and offline** after a one-time preparation, with a truthful readiness status. Light theme by default for outdoor use; manual dark mode.
+- **Accessibility**: keyboard and touch, reduced motion, 200% zoom, WCAG AA contrast, checked with axe in both languages and both themes.
+
+## Quick start
 
 ```bash
-git clone https://github.com/SwapidoApp/vibe-code-boilerplate.git your_new_app_name
-cd your_new_app_name
 bun install
-bun run dx   # dev server + i18n watcher
 ```
-
-Open http://localhost:3001 → default `/es`
-
-Write translations:
-
-```tsx
-import { useTranslations } from "@/lib/use-translations";
-
-const t = useTranslations();
-<h1>{t("Welcome to our app")}</h1>;
-```
-
-## i18n Workflow
-
-- Auto-sync on file save when running `bun run dx` (or `bun run i18n:sync` once)
-- New `t("...")` calls are automatically added to `locales/*.json` on save
-- Edit `locales/*.json` (keys are English phrases)
-- **Cursor command:** "Translate Missing Entries" (Cmd+Shift+P) to translate all empty `""` values in `es.json`
-
-## Theme & UI
-
-- Contained in `src/app/globals.css`
-- ShadCN components can be customized.
-- Fonts already configured; to change, replace files in `public/fonts/` and update `layout.tsx` if needed
-
-## Add shadcn Components
 
 ```bash
-npx shadcn@latest add <component>
+bun run dev
 ```
 
-Components appear in `src/components/ui/*`
+Open http://localhost:3001. The root page redirects to `/en/` or `/es/` from the browser language.
 
-## Project Layout
+## Commands
+
+| Command | What it does |
+| --- | --- |
+| `bun run dev` | Next dev server on port 3001 |
+| `bun run build` | Static export to `out/`, then writes the offline precache manifest |
+| `bun run start` | Serves `out/` on port 3001 (what the e2e tests target) |
+| `bun run lint` | Biome check |
+| `bun run typecheck` | TypeScript |
+| `bun test src` | Unit tests for the golf model and utilities |
+| `bunx playwright test` | End-to-end and accessibility tests against a fresh build |
+| `bun run dx` | Dev server plus the i18n watcher from the boilerplate |
+
+The pre-commit hook runs lint-staged (Biome format and check), then the full lint and typecheck. `npm install` is blocked on purpose; this is a Bun repository and `bun.lock` is the source of truth.
+
+## Verifying a change
+
+1. `bun run build` so `out/` reflects the change.
+2. `bun run start` in one terminal (or leave it running).
+3. `bunx playwright test` in another. The suite covers every club and drawing, handedness, contextual faults, carry persistence across units, language and reload, corrupt storage recovery, offline reload of unvisited pages after preparation, and axe checks.
+
+`next build` clears `.next`, which stops any running `next dev`. Restart the dev server after a build.
+
+## Project layout
 
 ```
+PRODUCT.md                     approved product spec
+docs/                          research reports and implementation notes
 src/
-  app/[locale]/ (layout.tsx, page.tsx)
-  components/ (navbar, theme-*)
-  components/ui/*
-  i18n/ (routing.ts, request.ts)
-  lib/ (use-translations, i18n-utils, utils)
-locales/ (en.json, es.json)
-scripts/i18n-sync.cjs
-```
-
-## Dev Commands
-
-```bash
-bun run dx        # dev + i18n watcher
-bun run i18n:sync # one-time sync
-bun test          # tests
-bun run lint      # Biome
-```
-
-## Testing
-
-See `src/lib/utils.test.ts` for an example. Bun's test runner uses Jest-compatible API:
-
-```ts
-import { describe, expect, test } from "bun:test";
-
-test("example", () => {
-  expect(1 + 1).toBe(2);
-});
+  app/page.tsx                 language redirect for /
+  app/[locale]/                layout, home page, sources (methodology) page
+  app/globals.css              design tokens and all component styles
+  components/range-notes.tsx   the tool: setup, diagnosis, bag, settings
+  components/golf-diagrams.tsx the seven SVG drawing families
+  lib/golf.ts                  clubs, setups, faults, flight logic, preferences schema
+  lib/golf.test.ts             unit tests for the model
+scripts/
+  prepare-offline.mjs          builds out/precache.json after export
+  serve-static.ts              Bun static server for out/
+public/
+  sw.js                        service worker with an explicit same-origin precache
+  manifest.webmanifest, icons  installable app metadata
+  images/                      approved editorial illustrations
+  fonts/                       Switzer and Plantin MT Pro (see FONTS.md)
+tests/                         Playwright specs and helpers
+locales/                       next-intl messages retained from the boilerplate
 ```
 
 ## Conventions
 
-- Keys = English phrases; falls back to English
-- Prefer HSL tokens; avoid inline colors
-- Pre-commit runs lint-staged, then full lint & typecheck
+- Instruction copy lives next to the code as `c("English", "Español")` pairs in `src/lib/golf.ts` and the components, so both languages are always complete.
+- Drawings state their viewpoint inside the SVG, attach every label to the feature it names, and use one color code: green for the player's body or reference, orange for the ball or what was observed, blue for the target or club path. Text is never mirrored for left-handers; geometry is.
+- Carry distances are stored in metres and converted for display. Never mix carry with total distance.
+- A clubface/path mechanism is a hypothesis inferred from a miss, not a definitive cause. Copy should express that uncertainty.
+- Distances from the research are references, not targets, and personal carries never enter the event interface.
 
----
+## Provenance
 
-## Credits
-
-Created by [Aureo](https://aureobitcoin.com) for **Bitcoin Day** at [La Casa de Satoshi](https://lacasadesatoshi.io) in Mexico City (CDMX).
+Built on the [Vibe Code Boilerplate](https://github.com/SwapidoApp/vibe-code-boilerplate) (Next.js App Router, Tailwind v4, next-intl, next-themes, Biome, Bun). Range Notes is a provisional name.

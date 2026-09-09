@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "Range Notes",
+  "short_name": "Range Notes",
+  "description": "A field guide for your next golf shot. Una guía para tu siguiente golpe.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7f6ef",
+  "theme_color": "#244d3c",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
