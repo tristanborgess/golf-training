@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "tailwindcss-animate";
 :root {
   color-scheme: light;
   --background: #f7f6ef;
@@ -96,43 +97,46 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
-button,
-input,
-select {
-  font: inherit;
-}
-button,
-a,
-input,
-select,
-summary {
-  -webkit-tap-highlight-color: transparent;
-}
-button {
-  cursor: pointer;
-  color: inherit;
-  border: 0;
-  background: none;
-  transition:
-    background 0.16s ease,
-    color 0.16s ease,
-    border-color 0.16s ease;
-}
-button:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-a {
-  color: inherit;
-  text-underline-offset: 4px;
-}
-button:focus-visible,
-a:focus-visible,
-summary:focus-visible,
-input:focus-visible,
-select:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 4px;
+/* Element resets live in the base layer so Tailwind utilities on shadcn primitives win over them. */
+@layer base {
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+  button,
+  a,
+  input,
+  select,
+  summary {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button {
+    cursor: pointer;
+    color: inherit;
+    border: 0;
+    background: none;
+    transition:
+      background 0.16s ease,
+      color 0.16s ease,
+      border-color 0.16s ease;
+  }
+  button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  a {
+    color: inherit;
+    text-underline-offset: 4px;
+  }
+  button:focus-visible,
+  a:focus-visible,
+  summary:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 4px;
+  }
 }
 input {
   caret-color: var(--signal);
@@ -1412,11 +1416,13 @@ a svg {
 
 /* The swing is the home surface; reference tools open in a focused sheet. */
 :root {
-  --golfer: #252a27;
+  --golfer: #30352f;
+  --golfer-rim: #c9d2c4;
   --heat-mid: #bc8054;
 }
 .dark {
   --golfer: #d8d7cd;
+  --golfer-rim: #ffffff;
   --heat-mid: #a76137;
 }
 .viewer-app {
@@ -1435,58 +1441,55 @@ a svg {
   margin: 12px auto 0;
   text-align: center;
 }
+.viewer-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
 .viewer-club {
-  display: block;
+  max-width: 100%;
+  height: auto;
+  min-height: 48px;
+  white-space: normal;
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }
-.viewer-club select {
-  min-height: 46px;
-  padding: 6px 42px 6px 24px;
-  border: 1px solid var(--border);
-  border-radius: 30px;
-  color: var(--foreground);
-  background: var(--paper);
-  font-size: 20px;
+.viewer-club-loft {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted-foreground);
 }
-.viewer-shots {
+.viewer-shots,
+.transport {
   border: 0;
   padding: 0;
-  margin: 12px auto 0;
+  margin: 0;
+  min-width: 0;
+}
+.viewer-shots {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-}
-.viewer-shots button {
-  min-height: 44px;
-  padding: 0 14px;
-  border-radius: 24px;
-  font-size: 13px;
-}
-.viewer-shots button[aria-pressed="true"] {
-  background: var(--secondary);
+  gap: 2px;
 }
 .view-controls {
-  position: relative;
-  margin-top: 20px;
-}
-.view-tabs {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 18px;
 }
-.view-tabs button {
+.view-tabs {
+  max-width: 100%;
+  height: auto;
   min-height: 44px;
-  padding: 8px 18px;
-  border-radius: 24px;
-  color: var(--muted-foreground);
-}
-.view-tabs button[aria-selected="true"] {
-  background: var(--secondary);
-  color: var(--foreground);
+  flex-wrap: wrap;
 }
 .reset-view {
   min-height: 44px;
   font-size: 12px;
-  text-decoration: underline;
 }
 .viewer-stage {
   height: clamp(320px, 49svh, 500px);
@@ -1520,23 +1523,11 @@ a svg {
   display: grid;
   gap: 10px;
 }
-.overlay-controls button {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--paper);
-  border: 1px solid var(--border);
-}
-.overlay-controls button[aria-pressed="true"] {
-  background: var(--secondary);
-  border-color: var(--foreground);
-}
 .perf-readout {
   position: absolute;
   left: 8px;
-  bottom: 8px;
+  top: 8px;
+  text-align: left;
   margin: 0;
   padding: 6px 8px;
   font:
@@ -1576,24 +1567,48 @@ a svg {
   display: flex;
   justify-content: space-between;
   gap: 2px;
+  margin-top: 6px;
 }
 .phase-strip button {
-  min-height: 44px;
-  flex: 1;
-  padding: 8px 6px;
-  border-radius: 24px;
-  font-size: 12px;
+  min-width: 0;
+  white-space: normal;
+  line-height: 1.1;
 }
-.phase-strip button[aria-pressed="true"] {
-  background: var(--signal);
-  color: var(--background);
-}
+/* Native range input styled to match the shadcn slider; its value is set imperatively per frame. */
 .swing-scrubber {
   display: block;
   width: calc(100% - 24px);
-  margin: 4px auto;
+  margin: 2px auto;
   height: 44px;
-  accent-color: var(--signal);
+  background: none;
+  appearance: none;
+  cursor: pointer;
+}
+.swing-scrubber::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--secondary);
+}
+.swing-scrubber::-moz-range-track {
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--secondary);
+}
+.swing-scrubber::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: var(--background);
+}
+.swing-scrubber::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  background: var(--background);
 }
 .transport {
   display: flex;
@@ -1603,28 +1618,9 @@ a svg {
   position: relative;
   margin-top: 8px;
 }
-.transport button {
-  display: grid;
-  place-items: center;
-  min-width: 44px;
-  min-height: 44px;
-  border-radius: 50%;
-}
-.transport .play-button {
-  background: var(--foreground);
-  color: var(--background);
-  width: 60px;
-  height: 60px;
-}
 .transport .half-speed {
   position: absolute;
-  right: 16px;
-  font-size: 15px;
-  color: var(--muted-foreground);
-}
-.half-speed[aria-pressed="true"] {
-  background: var(--secondary);
-  color: var(--foreground);
+  right: 8px;
 }
 .swing-cue {
   margin: 20px auto 0;
@@ -1641,50 +1637,24 @@ a svg {
   font-size: 11px;
   color: var(--muted-foreground);
 }
-.sheet-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  background: #101d1855;
-}
 .menu-sheet,
 .detail-modal {
-  position: fixed;
-  z-index: 51;
-  background: var(--background);
-  color: var(--foreground);
-  overflow: auto;
   overscroll-behavior: contain;
-  padding: 24px;
 }
-.menu-sheet {
-  inset: auto 0 0;
-  max-height: 90svh;
-  border-radius: 22px 22px 0 0;
-  padding-bottom: calc(28px + env(safe-area-inset-bottom));
-}
-.detail-modal {
-  inset: 5svh 16px;
-  border-radius: 20px;
-}
-.modal-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-.modal-heading h2 {
+.modal-title {
   font-family: var(--font-editorial), serif;
   font-weight: 400;
   font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  padding-right: 48px;
 }
 .sheet-handle {
-  width: 32px;
+  width: 36px;
   height: 4px;
   border-radius: 4px;
   background: var(--input);
-  margin: -12px auto 16px;
+  margin: 0 auto 18px;
 }
 .menu-section + .menu-section {
   margin-top: 24px;
@@ -1701,32 +1671,8 @@ a svg {
   font-weight: 400;
   margin: 16px 0 4px;
 }
-.menu-clubs button {
-  display: flex;
-  width: 100%;
-  min-height: 44px;
-  align-items: center;
-  gap: 18px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  text-align: left;
-}
-.menu-clubs button span {
-  width: 28px;
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-.menu-clubs button[aria-pressed="true"] {
-  background: var(--secondary);
-}
 .menu-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  min-height: 48px;
   text-decoration: none;
-  text-align: left;
 }
 .menu-disclaimer {
   margin-top: 28px;
@@ -1767,24 +1713,6 @@ a svg {
   margin: 4px 0 0;
   color: var(--muted-foreground);
 }
-@media (min-width: 768px) {
-  .menu-sheet {
-    inset: 0 0 0 auto;
-    width: 400px;
-    max-height: none;
-    border-radius: 0;
-  }
-  .sheet-handle {
-    display: none;
-  }
-  .detail-modal {
-    left: 50%;
-    right: auto;
-    width: min(840px, 90vw);
-    transform: translateX(-50%);
-    padding: 32px;
-  }
-}
 @media (max-width: 480px) {
   .viewer-app {
     padding: 0 18px;
@@ -1798,22 +1726,11 @@ a svg {
   .swing-viewer {
     margin-top: 4px;
   }
-  .view-tabs {
-    gap: 2px;
-  }
-  .view-tabs button {
-    padding: 8px 14px;
-    font-size: 13px;
-  }
-  .detail-modal {
-    inset: 3svh 8px;
-    padding: 20px 16px;
-  }
   .detail-modal .bag-grid {
     grid-template-columns: 1fr;
   }
   .transport {
-    gap: 18px;
+    gap: 14px;
   }
   .transport .half-speed {
     right: 0;
@@ -1826,9 +1743,6 @@ a svg {
   .phase-strip button {
     flex: 1 0 30%;
   }
-  .view-tabs {
-    flex-wrap: wrap;
-  }
   .swing-scrubber {
     display: none;
   }
@@ -1837,15 +1751,6 @@ a svg {
   }
 }
 
-.transport {
-  border: 0;
-  padding: 0;
-}
-
-.viewer-club select {
-  max-width: 100%;
-  width: 245px;
-}
 .canvas-layer canvas:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: -4px;

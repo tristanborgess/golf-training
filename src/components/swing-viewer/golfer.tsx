@@ -7,10 +7,10 @@ import {
   BoxGeometry,
   CylinderGeometry,
   Group,
+  Matrix4,
   Mesh,
   MeshStandardMaterial,
   type Object3D,
-  Quaternion,
   SkinnedMesh,
   SphereGeometry,
   Vector3,
@@ -24,22 +24,71 @@ import type { Player } from "./player-store";
 import { SkeletonOverlay } from "./skeleton-overlay";
 export type Colors = {
   body: string;
+  rim: string;
   mid: string;
   signal: string;
   green: string;
   blue: string;
   ground: string;
 };
+/**
+ * Shared scene anchors in world space, written by the golfer and read by the ground:
+ * 0–2 lead foot, 3–5 trail foot, 6–8 ball (clubhead at address), 9–11 forward direction.
+ */
+export const ANCHORS = 12;
+const bone = (root: Object3D, name: string) =>
+  root.getObjectByName(`mixamorig${name}`) ??
+  root.getObjectByName(`mixamorig:${name}`) ??
+  null;
+/** Whole-club length from butt to sole, metres. */
+const clubLength: Record<Club["system"], number> = {
+  driver: 1.15,
+  wood: 1.08,
+  iron: 0.95,
+  putter: 0.88,
+};
+function buildClub(club: Club, color: string) {
+  const material = new MeshStandardMaterial({ color, roughness: 0.45 });
+  const group = new Group();
+  const shaft = new Mesh(new CylinderGeometry(0.007, 0.01, 1, 10), material);
+  group.add(shaft);
+  const wood = club.system === "driver" || club.system === "wood";
+  const head = new Mesh(
+    wood
+      ? new SphereGeometry(club.system === "driver" ? 0.055 : 0.045, 14, 10)
+      : new BoxGeometry(
+          0.022,
+          club.system === "putter" ? 0.03 : 0.045,
+          club.system === "putter" ? 0.11 : 0.085,
+        ),
+    material,
+  );
+  if (wood) head.scale.set(1, 0.6, 1.25);
+  group.add(head);
+  const dispose = () => {
+    shaft.geometry.dispose();
+    head.geometry.dispose();
+    material.dispose();
+  };
+  /** Lay the shaft along -Y from the butt at the origin and seat the head at its sole. */
+  const fit = (length: number) => {
+    shaft.scale.set(1, length, 1);
+    shaft.position.y = -length / 2;
+    head.position.set(0, -length + (wood ? 0.03 : 0.02), wood ? 0.05 : 0.04);
+  };
+  fit(clubLength[club.system]);
+  return { group, fit, dispose, head };
+}
 export function Golfer({
   player,
-  feet,
+  anchors,
   club,
   hand,
   overlays,
   colors,
   onReady,
 }: {
-  feet: Float32Array;
+  anchors: Float32Array;
   player: Player;
   club: Club;
   hand: string;
@@ -53,15 +102,11 @@ export function Golfer({
   );
   const [model] = useState(() => clone(gltf.scene));
   const runtime = useRef<{
-    mixer: AnimationMixer;
     materials: ReturnType<typeof heatmapMaterial>[];
-    club: Object3D;
-    hand: Object3D | null;
-    direction: Vector3;
-    quaternion: Quaternion;
+    duration: number;
+    point: Vector3;
   } | null>(null);
-  const group = useRef<Group>(null),
-    invalidate = useThree((s) => s.invalidate);
+  const invalidate = useThree((s) => s.invalidate);
   const clip = player.getState().spec.clip;
   useEffect(
     () => () => {
@@ -92,59 +137,120 @@ export function Golfer({
     const action = mixer.clipAction(animation);
     action.play();
     action.paused = true;
-    const shaft = new Mesh(
-      new CylinderGeometry(0.009, 0.009, 0.95, 8),
-      new MeshStandardMaterial({ color: colors.blue, roughness: 0.5 }),
-    );
-    shaft.position.y = -0.475;
-    const head = new Mesh(
-      club.system === "driver" || club.system === "wood"
-        ? new SphereGeometry(0.08, 12, 8)
-        : new BoxGeometry(club.system === "putter" ? 0.18 : 0.12, 0.035, 0.065),
-      new MeshStandardMaterial({ color: colors.blue }),
-    );
-    head.position.set(0.035, -0.94, 0);
-    shaft.add(head);
-    head.position.y = -0.465;
-    // Orient from the wrist through the middle finger: stable grip in the authored rig.
-    const wrist =
-      model.getObjectByName("mixamorigRightHand") ??
-      model.getObjectByName("mixamorig:RightHand") ??
-      null;
-    const tip =
-      model.getObjectByName("mixamorigRightHandMiddle1") ??
-      model.getObjectByName("mixamorig:RightHandMiddle1") ??
-      null;
-    const object = new Group();
-    object.add(shaft);
-    model.add(object);
-    runtime.current = {
-      mixer,
-      materials,
-      club: object,
-      hand: wrist,
-      direction: new Vector3(),
-      quaternion: new Quaternion(),
-    };
-    const update = () => {
-      const state = player.getState();
-      action.time = state.t * animation.duration;
+    const pose = (t: number) => {
+      action.time = t * animation.duration;
       mixer.update(0);
       model.updateMatrixWorld(true);
-      if (wrist) {
-        wrist.getWorldPosition(object.position);
-        model.worldToLocal(object.position);
-        if (tip) {
-          const direction = model
-            .worldToLocal(tip.getWorldPosition(new Vector3()))
-            .sub(object.position)
-            .normalize();
-          object.quaternion.setFromUnitVectors(
-            new Vector3(0, -1, 0),
-            direction,
-          );
-        }
-      }
+    };
+
+    /*
+     * The club rides on the lead hand. Its transform is solved once at address:
+     * the grip runs from the top (lead) palm through the lower (trail) palm, the
+     * shaft is long enough for the sole to meet the ground, and the toe points
+     * away from the golfer. Every later frame inherits the hand's motion, so the
+     * face opens and closes with the wrists as it does in the capture.
+     */
+    const leadHand = bone(model, "LeftHand"),
+      leadPalm = bone(model, "LeftHandMiddle1") ?? leadHand,
+      trailHand = bone(model, "RightHand"),
+      trailPalm = bone(model, "RightHandMiddle1") ?? trailHand,
+      hips = bone(model, "Hips"),
+      leadFoot = bone(model, "LeftFoot"),
+      trailFoot = bone(model, "RightFoot");
+    const golfClub = buildClub(club, colors.blue);
+    const modelInverse = new Matrix4(),
+      local = (o: Object3D, out: Vector3) =>
+        out.setFromMatrixPosition(o.matrixWorld).applyMatrix4(modelInverse);
+    const forward = new Vector3(0, 0, 1),
+      ballLocal = new Vector3();
+    if (
+      leadHand &&
+      leadPalm &&
+      trailHand &&
+      trailPalm &&
+      hips &&
+      leadFoot &&
+      trailFoot
+    ) {
+      model.parent?.updateWorldMatrix(true, false);
+      pose(0);
+      modelInverse.copy(model.matrixWorld).invert();
+      const a = new Vector3(),
+        b = new Vector3();
+      const top = local(leadHand, a)
+        .add(local(leadPalm, b))
+        .multiplyScalar(0.5)
+        .clone();
+      const low = local(trailHand, a)
+        .add(local(trailPalm, b))
+        .multiplyScalar(0.5)
+        .clone();
+      const grip = top.clone().add(low).multiplyScalar(0.5);
+      const hip = local(hips, a).clone();
+      const feet = local(leadFoot, a)
+        .add(local(trailFoot, b))
+        .multiplyScalar(0.5)
+        .clone();
+      /* The golfer faces the ball: hands hang forward of the hips at address. */
+      forward.copy(grip).sub(hip).setY(0).normalize();
+      if (forward.lengthSq() < 0.5) forward.set(0, 0, 1);
+      /*
+       * Solve the address geometry instead of trusting finger bones: the shaft
+       * passes through the hands, the sole rests on the ground, and the head sits
+       * on the forward line through the stance centre. That is where the ball is.
+       */
+      const nominal = clubLength[club.system],
+        below = nominal - 0.16; // hands cover the top of the grip
+      const h = new Vector3(feet.x - grip.x, 0, feet.z - grip.z),
+        hf = h.dot(forward),
+        reach = below * below - grip.y * grip.y - h.lengthSq();
+      const d = reach + hf * hf >= 0 ? -hf + Math.sqrt(reach + hf * hf) : -hf;
+      const head = new Vector3(
+        feet.x + forward.x * d,
+        0.02,
+        feet.z + forward.z * d,
+      );
+      const down = head.clone().sub(grip).normalize();
+      if (down.y > -0.3) down.set(0, -1, 0);
+      const butt = top.clone().addScaledVector(down, -0.06);
+      golfClub.fit(head.distanceTo(butt));
+      const toe = forward
+        .clone()
+        .addScaledVector(down, -forward.dot(down))
+        .normalize();
+      const up = down.clone().negate(),
+        side = new Vector3().crossVectors(up, toe);
+      const clubMatrix = new Matrix4()
+        .makeBasis(side, up, toe)
+        .setPosition(butt);
+      const handInverse = modelInverse
+        .clone()
+        .multiply(leadHand.matrixWorld)
+        .invert();
+      golfClub.group.matrix.multiplyMatrices(handInverse, clubMatrix);
+      golfClub.group.matrix.decompose(
+        golfClub.group.position,
+        golfClub.group.quaternion,
+        golfClub.group.scale,
+      );
+      leadHand.add(golfClub.group);
+      model.updateMatrixWorld(true);
+      ballLocal.copy(head).setY(0);
+    } else {
+      model.add(golfClub.group);
+    }
+    const point = new Vector3();
+    const ball = ballLocal.clone().applyMatrix4(model.matrixWorld);
+    ball.toArray(anchors, 6);
+    forward
+      .clone()
+      .transformDirection(model.matrixWorld)
+      .setY(0)
+      .normalize()
+      .toArray(anchors, 9);
+    runtime.current = { materials, duration: animation.duration, point };
+    const update = () => {
+      pose(player.getState().t);
       invalidate();
     };
     update();
@@ -157,36 +263,33 @@ export function Golfer({
       materials.forEach((m) => {
         m.material.dispose();
       });
-      object.removeFromParent();
-      shaft.geometry.dispose();
-      shaft.material.dispose();
-      head.geometry.dispose();
-      head.material.dispose();
+      golfClub.group.removeFromParent();
+      golfClub.dispose();
     };
   }, [
     model,
     gltf.animations,
     clip,
-    club.system,
+    club,
     colors.blue,
     invalidate,
     onReady,
     player,
+    anchors,
   ]);
-  useFrame(() => {
+  useFrame((_, delta) => {
     const r = runtime.current;
     if (!r) return;
-    const point = r.direction;
+    /* One clock: the render loop advances the swing, so every drawn frame is a fresh pose. */
+    player.advance(Math.min(delta, 0.1), r.duration);
     for (const [i, side] of ["Left", "Right"].entries()) {
-      const foot =
-        model.getObjectByName(`mixamorig${side}Foot`) ??
-        model.getObjectByName(`mixamorig:${side}Foot`);
-      foot?.getWorldPosition(point);
-      point.toArray(feet, i * 3);
+      bone(model, `${side}Foot`)?.getWorldPosition(r.point);
+      r.point.toArray(anchors, i * 3);
     }
+    const state = player.getState();
     for (const m of r.materials)
       m.update(
-        pressureAt(player.getState().spec, player.getState().t),
+        pressureAt(state.spec, state.t),
         overlays.pressure,
         overlays.skeleton,
         colors,
@@ -198,7 +301,7 @@ export function Golfer({
   return (
     <>
       <group scale={[hand === "left" ? -1 : 1, 1, 1]}>
-        <group ref={group} rotation={[0, Math.PI / 2, 0]}>
+        <group rotation={[0, Math.PI / 2, 0]}>
           <primitive object={model} />
         </group>
       </group>

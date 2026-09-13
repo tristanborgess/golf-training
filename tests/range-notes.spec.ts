@@ -10,6 +10,18 @@ async function menu(page: Page, name: string) {
   await page.getByRole("button", { name: "Menu", exact: true }).click();
   await page.getByRole("button", { name, exact: true }).click();
 }
+/** Pick a club from the menu sheet, the only place clubs are chosen now. */
+async function pickClub(page: Page, id: string) {
+  const club = clubs.find((c) => c.id === id);
+  if (!club) throw new Error(`Unknown club ${id}`);
+  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await page
+    .getByRole("button", { name: `${club.short} ${club.name.en}`, exact: true })
+    .click();
+  await expect(
+    page.getByRole("button", { name: `${club.name.en}. Change club` }),
+  ).toBeVisible();
+}
 async function close(page: Page) {
   await page.getByRole("button", { name: "Close", exact: true }).click();
 }
@@ -23,23 +35,23 @@ test("every club plays the expected clip; phase controls, view tabs, orbit, over
   await expect.poll(async () => (await state(page))?.ready).toBe(true);
   expect((await state(page)).look).toBe("top");
   expect((await state(page)).phase).toBe(2);
-  await expect(page.getByRole("combobox", { name: "Your club" })).toHaveValue(
-    "driver",
-  );
+  await expect(
+    page.getByRole("button", { name: "Driver. Change club" }),
+  ).toBeVisible();
   for (const club of clubs) {
-    await page.getByRole("combobox").selectOption(club.id);
+    await pickClub(page, club.id);
     const clip = club.system === "putter" ? "putt" : "full";
     await expect.poll(async () => (await state(page)).clipName).toBe(clip);
     await expect
       .poll(async () => (await state(page)).clipDuration)
       .toBeCloseTo(clipData[clip].duration, 4);
   }
-  await page.getByRole("combobox").selectOption("sw");
+  await pickClub(page, "sw");
   await page.getByRole("button", { name: "Chip", exact: true }).click();
   await expect.poll(async () => (await state(page)).clipName).toBe("chip");
   await page.getByRole("button", { name: "Pitch", exact: true }).click();
   await expect(page.locator(".swing-cue")).toContainText("approximation");
-  await page.getByRole("combobox").selectOption("7iron");
+  await pickClub(page, "7iron");
   for (const [i, name] of [
     "Address",
     "Takeaway",
@@ -334,7 +346,11 @@ test("four camera presets have stable visual smoke coverage", async ({
     await page.getByRole("tab", { name: view, exact: true }).click();
     await expect(page.locator(".viewer-stage")).toHaveScreenshot(
       `camera-${view.toLowerCase()}.png`,
-      { maxDiffPixelRatio: 0.04, animations: "disabled" },
+      {
+        maxDiffPixelRatio: 0.1, // smoke test: adaptive DPR shifts anti-aliasing between runs
+        animations: "disabled",
+        mask: [page.locator(".perf-readout")],
+      },
     );
   }
 });

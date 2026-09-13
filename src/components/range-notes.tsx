@@ -272,7 +272,7 @@ export function RangeNotes({ lang }: { lang: Language }) {
           look={prefs.look}
           speed={prefs.speed}
           poseRequest={poseRequest}
-          onClub={chooseClub}
+          onMenu={() => setMenu(true)}
           onShot={setShot}
           onPreferences={(patch) => setPrefs((p) => ({ ...p, ...patch }))}
         />

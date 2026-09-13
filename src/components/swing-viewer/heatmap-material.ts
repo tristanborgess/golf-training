@@ -25,6 +25,7 @@ export function heatmapMaterial(mesh: SkinnedMesh) {
     uHeatmapMix: { value: 0 },
     uHeatMid: { value: new Color() },
     uHeatHigh: { value: new Color() },
+    uRim: { value: new Color() },
   };
   material.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, uniforms);
@@ -34,10 +35,16 @@ export function heatmapMaterial(mesh: SkinnedMesh) {
         `#include <skinning_vertex>\nvPressure=dot(skinWeight,vec4(uPressure[int(skinIndex.x)],uPressure[int(skinIndex.y)],uPressure[int(skinIndex.z)],uPressure[int(skinIndex.w)]));`,
       );
     shader.fragmentShader =
-      `uniform float uHeatmapMix;uniform vec3 uHeatMid;uniform vec3 uHeatHigh;varying float vPressure;\n${shader.fragmentShader}`.replace(
-        "#include <color_fragment>",
-        "#include <color_fragment>\nvec3 thermal=vPressure<0.5?mix(diffuseColor.rgb,uHeatMid,vPressure*2.0):mix(uHeatMid,uHeatHigh,(vPressure-0.5)*2.0);diffuseColor.rgb=mix(diffuseColor.rgb,thermal,uHeatmapMix);",
-      );
+      `uniform float uHeatmapMix;uniform vec3 uHeatMid;uniform vec3 uHeatHigh;uniform vec3 uRim;varying float vPressure;\n${shader.fragmentShader}`
+        .replace(
+          "#include <color_fragment>",
+          "#include <color_fragment>\nvec3 thermal=vPressure<0.5?mix(diffuseColor.rgb,uHeatMid,vPressure*2.0):mix(uHeatMid,uHeatHigh,(vPressure-0.5)*2.0);diffuseColor.rgb=mix(diffuseColor.rgb,thermal,uHeatmapMix);",
+        )
+        /* A soft rim keeps the matte silhouette readable against either theme. */
+        .replace(
+          "#include <opaque_fragment>",
+          "outgoingLight+=uRim*pow(1.0-saturate(dot(normalize(vViewPosition),normal)),3.0);\n#include <opaque_fragment>",
+        );
   };
   return {
     material,
@@ -45,7 +52,7 @@ export function heatmapMaterial(mesh: SkinnedMesh) {
       p: Pressure,
       pressure: boolean,
       skeleton: boolean,
-      colors: { body: string; mid: string; signal: string },
+      colors: { body: string; rim: string; mid: string; signal: string },
     ) => {
       regions.forEach((r, i) => {
         values[i] = r ? p[r] : 0;
@@ -53,6 +60,7 @@ export function heatmapMaterial(mesh: SkinnedMesh) {
       uniforms.uHeatmapMix.value = pressure ? 1 : 0;
       uniforms.uHeatMid.value.set(colors.mid);
       uniforms.uHeatHigh.value.set(colors.signal);
+      uniforms.uRim.value.set(colors.rim);
       material.color.set(colors.body);
       material.transparent = skeleton;
       material.opacity = skeleton ? 0.15 : 1;

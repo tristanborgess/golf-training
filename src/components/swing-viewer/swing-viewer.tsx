@@ -2,6 +2,7 @@
 import {
   Activity,
   Bone,
+  ChevronDown,
   Pause,
   Play,
   SkipBack,
@@ -16,9 +17,10 @@ import {
   useRef,
   useState,
 } from "react";
+import { Button } from "@/components/ui/button";
+import { Toggle } from "@/components/ui/toggle";
 import {
   type Club,
-  clubs,
   type Hand,
   isWedge,
   type Language,
@@ -35,6 +37,7 @@ import {
   swingFor,
 } from "@/lib/swing";
 import { clipData } from "@/lib/swing-data";
+import { cn } from "@/lib/utils";
 import type { Colors } from "./golfer";
 import { emptyPerf, formatPerf } from "./perf";
 import { createPlayer } from "./player-store";
@@ -64,6 +67,8 @@ const lookNames = {
   top: { en: "Top", es: "Arriba" },
   back: { en: "Back", es: "Espalda" },
 };
+const isLook = (value: string): value is Preferences["look"] =>
+  (looks as readonly string[]).includes(value);
 export function SwingViewer({
   initialized,
   club,
@@ -74,7 +79,7 @@ export function SwingViewer({
   look,
   speed,
   poseRequest,
-  onClub,
+  onMenu,
   onShot,
   onPreferences,
 }: {
@@ -87,7 +92,7 @@ export function SwingViewer({
   look: Preferences["look"];
   speed: 1 | 0.5;
   poseRequest: { phase: Phase; nonce: number };
-  onClub: (id: string) => void;
+  onMenu: () => void;
   onShot: (shot: Shot) => void;
   onPreferences: (patch: Partial<Preferences>) => void;
 }) {
@@ -108,6 +113,7 @@ export function SwingViewer({
     scrubber = useRef<HTMLInputElement>(null);
   const [colors, setColors] = useState<Colors>({
     body: "#252a27",
+    rim: "#5a625c",
     mid: "#be8152",
     signal: "#a74724",
     green: "#386e50",
@@ -151,6 +157,7 @@ export function SwingViewer({
       const color = (name: string) => css.getPropertyValue(name).trim();
       setColors({
         body: color("--golfer"),
+        rim: color("--golfer-rim"),
         mid: color("--heat-mid"),
         signal: color("--signal"),
         green: color("--diagram-green"),
@@ -184,7 +191,10 @@ export function SwingViewer({
     setReady(false);
   }, []);
   const onOrbit = useCallback(() => setSelected(null), []);
+  const live = ready && !failed;
+  /* The canvas advances the swing from its own render loop; the poster needs this clock instead. */
   useEffect(() => {
+    if (live || !state.playing) return;
     let frame = 0,
       last = performance.now();
     const tick = (now: number) => {
@@ -192,9 +202,9 @@ export function SwingViewer({
       last = now;
       frame = requestAnimationFrame(tick);
     };
-    if (state.playing) frame = requestAnimationFrame(tick);
+    frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [player, state.playing]);
+  }, [player, state.playing, live]);
   useEffect(() => {
     const update = () => {
       if (scrubber.current)
@@ -238,96 +248,107 @@ export function SwingViewer({
     `Presión ${Math.round((lead ? split.lead : split.trail) * 100)}% ${lead ? "delante" : "atrás"}`,
   );
   const cue = `${spec.cues[state.phase][lang]}${spec.approximation ? ` ${spec.approximation[lang]}` : ""}${overlays.pressure ? ` ${pressure}.` : ""}`;
+  const chooseLook = (value: string) => {
+    if (!isLook(value)) return;
+    onPreferences({ look: value });
+    setSelected(value);
+  };
   return (
     <section
       className="swing-viewer"
       aria-label={t("Swing viewer", "Visor de swing")}
     >
-      <label className="viewer-club">
-        <span className="sr-only">{t("Your club", "Tu palo")}</span>
-        <select value={club.id} onChange={(e) => onClub(e.target.value)}>
-          {[...new Set(clubs.map((c) => c.group.en))].map((group) => (
-            <optgroup
-              label={clubs.find((c) => c.group.en === group)?.group[lang]}
-              key={group}
-            >
-              {clubs
-                .filter((c) => c.group.en === group)
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name[lang]}
-                  </option>
-                ))}
-            </optgroup>
-          ))}
-        </select>
-      </label>
-      {isWedge(club) && (
-        <fieldset className="viewer-shots">
-          <legend className="sr-only">{t("Shot type", "Tipo de golpe")}</legend>
-          {(Object.keys(shotNames) as Shot[]).map((s) => (
-            <button
-              type="button"
-              key={s}
-              aria-pressed={shot === s}
-              onClick={() => onShot(s)}
-            >
-              {s === "stock" ? t("Stock", "Normal") : shotNames[s][lang]}
-            </button>
-          ))}
-        </fieldset>
-      )}
+      <div className="viewer-heading">
+        <Button
+          type="button"
+          variant="outline"
+          className="viewer-club h-12 rounded-full px-5 text-lg"
+          onClick={onMenu}
+          aria-label={t(
+            `${club.name[lang]}. Change club`,
+            `${club.name[lang]}. Cambiar palo`,
+          )}
+        >
+          <span className="viewer-club-name">{club.name[lang]}</span>
+          <span className="viewer-club-loft">{club.loft}</span>
+          <ChevronDown aria-hidden="true" />
+        </Button>
+        {isWedge(club) && (
+          <fieldset className="viewer-shots">
+            <legend className="sr-only">
+              {t("Shot type", "Tipo de golpe")}
+            </legend>
+            {(Object.keys(shotNames) as Shot[]).map((s) => (
+              <Button
+                type="button"
+                key={s}
+                size="sm"
+                variant={shot === s ? "secondary" : "ghost"}
+                className="rounded-full"
+                aria-pressed={shot === s}
+                onClick={() => onShot(s)}
+              >
+                {s === "stock" ? t("Stock", "Normal") : shotNames[s][lang]}
+              </Button>
+            ))}
+          </fieldset>
+        )}
+      </div>
       <div className="view-controls">
+        {/* One shared panel for four views, so the tablist is explicit rather than Radix Tabs. */}
         <div
           role="tablist"
           aria-label={t("View", "Vista")}
-          className="view-tabs"
+          className="view-tabs inline-flex h-11 items-center justify-center rounded-full bg-muted p-1 text-muted-foreground"
         >
-          {looks.map((l, i) => (
-            <button
-              role="tab"
-              type="button"
-              key={l}
-              aria-selected={selected === l}
-              tabIndex={selected === l || (!selected && i === 0) ? 0 : -1}
-              onKeyDown={(e) => {
-                if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+          {looks.map((l, i) => {
+            const active = selected === l;
+            return (
+              <button
+                role="tab"
+                type="button"
+                key={l}
+                id={`view-tab-${l}`}
+                aria-selected={active}
+                aria-controls="viewer-stage"
+                data-state={active ? "active" : "inactive"}
+                tabIndex={active || (!selected && i === 0) ? 0 : -1}
+                className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full px-4 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+                onKeyDown={(e) => {
+                  if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
                   e.preventDefault();
                   const next =
                     looks[(i + (e.key === "ArrowRight" ? 1 : 3)) % 4];
-                  onPreferences({ look: next });
-                  setSelected(next);
-                  (
-                    e.currentTarget.parentElement?.children[
-                      looks.indexOf(next)
-                    ] as HTMLElement
-                  )?.focus();
-                }
-              }}
-              onClick={() => {
-                onPreferences({ look: l });
-                setSelected(l);
-              }}
-            >
-              {lookNames[l][lang]}
-            </button>
-          ))}
+                  chooseLook(next);
+                  document.getElementById(`view-tab-${next}`)?.focus();
+                }}
+                onClick={() => chooseLook(l)}
+              >
+                {lookNames[l][lang]}
+              </button>
+            );
+          })}
         </div>
         {!selected && (
-          <button
-            className="reset-view"
+          <Button
             type="button"
-            onClick={() => {
-              setSelected("front");
-              onPreferences({ look: "front" });
-            }}
+            variant="link"
+            size="sm"
+            className="reset-view"
+            onClick={() => chooseLook("front")}
           >
             {t("Reset view", "Restablecer vista")}
-          </button>
+          </Button>
         )}
       </div>
-      <div className="viewer-stage">
-        {(!ready || failed) && (
+      <div
+        className="viewer-stage"
+        id="viewer-stage"
+        role="tabpanel"
+        aria-labelledby={selected ? `view-tab-${selected}` : undefined}
+        aria-label={selected ? undefined : t("Free view", "Vista libre")}
+      >
+        {!live && (
           <PosterFallback
             player={player}
             hand={hand}
@@ -338,7 +359,7 @@ export function SwingViewer({
         )}
         <div
           className="canvas-layer"
-          style={{ visibility: ready && !failed ? "visible" : "hidden" }}
+          style={{ visibility: live ? "visible" : "hidden" }}
         >
           {mounted && !failed && (
             <CanvasBoundary onFailure={onFailure}>
@@ -350,6 +371,8 @@ export function SwingViewer({
                 colors={colors}
                 look={selected}
                 reduced={reduced}
+                playing={state.playing}
+                ready={ready}
                 onOrbit={onOrbit}
                 onReady={onReady}
                 label={`${cue} ${t("Arrow keys orbit; plus and minus zoom.", "Las flechas giran; más y menos acercan o alejan.")}`}
@@ -359,7 +382,7 @@ export function SwingViewer({
             </CanvasBoundary>
           )}
         </div>
-        {debug && ready && !failed && (
+        {debug && live && (
           <pre className="perf-readout" aria-hidden="true">
             {readout}
           </pre>
@@ -379,20 +402,19 @@ export function SwingViewer({
               },
             ] as const
           ).map(({ name, label, Icon }) => (
-            <button
+            <Toggle
               key={name}
-              type="button"
+              variant="outline"
+              className="h-11 w-11 rounded-xl bg-background shadow-sm data-[state=on]:border-foreground data-[state=on]:bg-secondary"
               aria-label={label}
               title={label}
-              aria-pressed={overlays[name]}
-              onClick={() =>
-                onPreferences({
-                  overlays: { ...overlays, [name]: !overlays[name] },
-                })
+              pressed={overlays[name]}
+              onPressedChange={(on) =>
+                onPreferences({ overlays: { ...overlays, [name]: on } })
               }
             >
-              <Icon size={20} />
-            </button>
+              <Icon className="!size-5" />
+            </Toggle>
           ))}
         </div>
       </div>
@@ -406,14 +428,21 @@ export function SwingViewer({
       )}
       <div className="phase-strip">
         {phases.map((p) => (
-          <button
+          <Button
             type="button"
             key={p}
+            size="sm"
+            variant={state.phase === p ? "default" : "ghost"}
+            className={cn(
+              "h-11 flex-1 rounded-full px-1 text-xs",
+              state.phase === p &&
+                "bg-[var(--signal)] hover:bg-[var(--signal)]",
+            )}
             aria-pressed={state.phase === p}
             onClick={() => player.seek(p, reduced)}
           >
             {phaseNames[p][lang]}
-          </button>
+          </Button>
         ))}
       </div>
       <input
@@ -441,41 +470,51 @@ export function SwingViewer({
           }
         }}
       >
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="icon"
+          className="h-12 w-12 rounded-full"
           aria-label={t("Previous phase", "Fase anterior")}
           disabled={state.phase === 0}
           onClick={() => player.step(-1, reduced)}
         >
-          <SkipBack size={22} />
-        </button>
-        <button
+          <SkipBack className="!size-5" />
+        </Button>
+        <Button
           type="button"
-          className="play-button"
+          size="icon"
+          className="play-button h-16 w-16 rounded-full"
           aria-label={
             state.playing ? t("Pause", "Pausa") : t("Play", "Reproducir")
           }
           onClick={() => player.toggle()}
         >
-          {state.playing ? <Pause size={24} /> : <Play size={24} />}
-        </button>
-        <button
+          {state.playing ? (
+            <Pause className="!size-6" />
+          ) : (
+            <Play className="!size-6 translate-x-0.5" />
+          )}
+        </Button>
+        <Button
           type="button"
+          variant="outline"
+          size="icon"
+          className="h-12 w-12 rounded-full"
           aria-label={t("Next phase", "Siguiente fase")}
           disabled={state.phase === 4}
           onClick={() => player.step(1, reduced)}
         >
-          <SkipForward size={22} />
-        </button>
-        <button
-          type="button"
-          className="half-speed"
+          <SkipForward className="!size-5" />
+        </Button>
+        <Toggle
+          className="half-speed h-11 rounded-full px-3 text-sm text-muted-foreground data-[state=on]:text-foreground"
           aria-label={t("Half speed", "Media velocidad")}
-          aria-pressed={speed === 0.5}
-          onClick={() => onPreferences({ speed: speed === 1 ? 0.5 : 1 })}
+          pressed={speed === 0.5}
+          onPressedChange={(on) => onPreferences({ speed: on ? 0.5 : 1 })}
         >
           ½×
-        </button>
+        </Toggle>
       </fieldset>
       <p className="swing-cue">{cue}</p>
       <span className="sr-only" aria-live="polite" aria-atomic="true">

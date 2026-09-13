@@ -99,7 +99,7 @@ Built on the [Vibe Code Boilerplate](https://github.com/SwapidoApp/vibe-code-boi
 
 ## Swing viewer
 
-Share a pose with `/en/?club=7iron&look=front&phase=2`. Existing `?view=fix`, `bag`, `settings` and `setup` links open details above the viewer. Preferences migrate in place to version 2 under `range-notes:v1`.
+The club name at the top opens the menu, which is where clubs are chosen. Share a pose with `/en/?club=7iron&look=front&phase=2`. Existing `?view=fix`, `bag`, `settings` and `setup` links open details above the viewer. Preferences migrate in place to version 2 under `range-notes:v1`.
 
 Focus the canvas and use arrow keys to orbit, +/− to zoom. View tabs also support arrow keys. Phase chips, scrubber and transport work with keyboard or touch; transport arrows step phases and Space toggles playback. Explicit reduced-motion playback defaults to half speed on a new device.
 

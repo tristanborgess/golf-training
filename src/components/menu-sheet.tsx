@@ -1,5 +1,6 @@
 "use client";
 import { ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { clubs, type Language } from "@/lib/golf";
 import { DetailModal } from "./detail-modals";
 export type Detail =
@@ -54,18 +55,22 @@ export function MenuSheet({
             {clubs
               .filter((c) => c.group.en === group)
               .map((c) => (
-                <button
+                <Button
                   type="button"
                   key={c.id}
+                  variant={club === c.id ? "secondary" : "ghost"}
+                  className="h-11 w-full justify-start gap-4 px-3 text-[15px] font-normal"
                   aria-pressed={club === c.id}
                   onClick={() => {
                     onClub(c.id);
                     onClose();
                   }}
                 >
-                  <span>{c.short}</span>
+                  <span className="w-7 text-xs text-muted-foreground">
+                    {c.short}
+                  </span>
                   {c.name[lang]}
-                </button>
+                </Button>
               ))}
           </div>
         ))}
@@ -74,41 +79,54 @@ export function MenuSheet({
         <h3>{lang === "en" ? "This swing" : "Este swing"}</h3>
         {(["setup", "grip", "impact", "flight", "carry"] as Detail[]).map(
           (d) => (
-            <button
+            <Button
               type="button"
-              className="menu-row"
+              variant="ghost"
+              className="menu-row h-12 w-full justify-between px-3 text-[15px] font-normal"
               key={d}
               onClick={() => onDetail(d)}
             >
               {detailNames[d][lang]}
-              <ChevronRight size={17} />
-            </button>
+              <ChevronRight aria-hidden="true" />
+            </Button>
           ),
         )}
       </section>
       <section className="menu-section">
         {(["fix", "bag", "settings"] as Detail[]).map((d) => (
-          <button
+          <Button
             type="button"
-            className="menu-row"
+            variant="ghost"
+            className="menu-row h-12 w-full justify-between px-3 text-[15px] font-normal"
             key={d}
             onClick={() => onDetail(d)}
           >
             {detailNames[d][lang]}
-            <ChevronRight size={17} />
-          </button>
+            <ChevronRight aria-hidden="true" />
+          </Button>
         ))}
-        <a className="menu-row" href={`/${lang}/sources/`}>
-          {lang === "en" ? "The approach" : "El método"}
-          <ChevronRight size={17} />
-        </a>
-        <a
-          className="menu-row"
-          href={`/${lang === "en" ? "es" : "en"}/`}
-          lang={lang === "en" ? "es" : "en"}
+        <Button
+          asChild
+          variant="ghost"
+          className="menu-row h-12 w-full justify-between px-3 text-[15px] font-normal"
         >
-          {lang === "en" ? "Español" : "English"}
-        </a>
+          <a href={`/${lang}/sources/`}>
+            {lang === "en" ? "The approach" : "El método"}
+            <ChevronRight aria-hidden="true" />
+          </a>
+        </Button>
+        <Button
+          asChild
+          variant="ghost"
+          className="menu-row h-12 w-full justify-between px-3 text-[15px] font-normal"
+        >
+          <a
+            href={`/${lang === "en" ? "es" : "en"}/`}
+            lang={lang === "en" ? "es" : "en"}
+          >
+            {lang === "en" ? "Español" : "English"}
+          </a>
+        </Button>
       </section>
       <p className="menu-disclaimer">
         {lang === "en"

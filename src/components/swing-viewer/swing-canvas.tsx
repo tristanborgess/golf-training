@@ -2,11 +2,11 @@
 import { AdaptiveDpr, PerformanceMonitor } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useRef, useState } from "react";
-import type { Mesh, MeshBasicMaterial } from "three";
+import type { Group, Mesh, MeshBasicMaterial } from "three";
 import type { Club, Preferences } from "@/lib/golf";
 import { pressureAt } from "@/lib/swing";
 import { CameraRig } from "./camera-rig";
-import { type Colors, Golfer } from "./golfer";
+import { ANCHORS, type Colors, Golfer } from "./golfer";
 import type { Perf } from "./perf";
 import type { Player } from "./player-store";
 
@@ -41,14 +41,15 @@ function CanvasDescription({ label }: { label: string }) {
   }, [gl, label]);
   return null;
 }
+/** Ground disc, target line and ball, placed from the golfer's address pose. */
 function Ground({
   player,
   hand,
   overlays,
   colors,
-  feet,
+  anchors,
 }: {
-  feet: Float32Array;
+  anchors: Float32Array;
   player: Player;
   hand: string;
   overlays: Preferences["overlays"];
@@ -56,35 +57,48 @@ function Ground({
 }) {
   const lead = useRef<Mesh>(null),
     trail = useRef<Mesh>(null),
+    ball = useRef<Mesh>(null),
+    line = useRef<Group>(null),
     mirror = hand === "left" ? -1 : 1;
   useFrame(() => {
-    const p = pressureAt(player.getState().spec, player.getState().t);
-    if (lead.current)
-      lead.current.position.set(feet[0] * mirror, 0.003, feet[2]);
-    if (trail.current)
-      trail.current.position.set(feet[3] * mirror, 0.003, feet[5]);
-    if (lead.current)
+    const state = player.getState();
+    const p = pressureAt(state.spec, state.t);
+    if (lead.current) {
+      lead.current.position.set(anchors[0] * mirror, 0.003, anchors[2]);
       (lead.current.material as MeshBasicMaterial).opacity = overlays.pressure
         ? p.leadFoot * 0.7
         : 0;
-    if (trail.current)
+    }
+    if (trail.current) {
+      trail.current.position.set(anchors[3] * mirror, 0.003, anchors[5]);
       (trail.current.material as MeshBasicMaterial).opacity = overlays.pressure
         ? p.trailFoot * 0.7
         : 0;
+    }
+    if (ball.current && line.current && (anchors[9] || anchors[11])) {
+      ball.current.position.set(anchors[6] * mirror, 0.021, anchors[8]);
+      line.current.position.set(anchors[6] * mirror, 0, anchors[8]);
+      /* The target line runs perpendicular to the golfer's forward direction. */
+      const fx = anchors[9] * mirror,
+        fz = anchors[11];
+      line.current.rotation.y = Math.atan2(fx, fz);
+    }
   });
   return (
     <group scale={[mirror, 1, 1]}>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.015, 0]}>
-        <circleGeometry args={[1.15, 64]} />
+        <circleGeometry args={[1.25, 64]} />
         <meshBasicMaterial color={colors.ground} toneMapped={false} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0.6]}>
-        <planeGeometry args={[2, 0.009]} />
-        <meshBasicMaterial color={colors.blue} />
-      </mesh>
-      <mesh position={[-0.1, 0.025, 0.6]}>
-        <sphereGeometry args={[0.025, 16, 12]} />
-        <meshStandardMaterial color={colors.signal} />
+      <group ref={line}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
+          <planeGeometry args={[2.4, 0.008]} />
+          <meshBasicMaterial color={colors.blue} toneMapped={false} />
+        </mesh>
+      </group>
+      <mesh ref={ball} position={[0, 0.021, 0.6]}>
+        <sphereGeometry args={[0.021, 18, 14]} />
+        <meshStandardMaterial color={colors.signal} roughness={0.35} />
       </mesh>
       {[lead, trail].map((ref, i) => (
         <mesh
@@ -112,6 +126,8 @@ export default function SwingCanvas(props: {
   colors: Colors;
   look: Preferences["look"] | null;
   reduced: boolean;
+  playing: boolean;
+  ready: boolean;
   onOrbit: () => void;
   onReady: (name: string, duration: number) => void;
   label: string;
@@ -119,10 +135,10 @@ export default function SwingCanvas(props: {
   perf?: Perf;
 }) {
   const [dpr, setDpr] = useState(1.5);
-  const [feet] = useState(() => new Float32Array(6));
+  const [anchors] = useState(() => new Float32Array(ANCHORS));
   return (
     <Canvas
-      frameloop="demand"
+      frameloop={props.playing ? "always" : "demand"}
       dpr={dpr}
       camera={{ position: [0, 1.05, 3.7], fov: 42 }}
       gl={{ antialias: true, powerPreference: "high-performance", alpha: true }}
@@ -136,14 +152,14 @@ export default function SwingCanvas(props: {
       }}
     >
       <CanvasDescription label={props.label} />
-      <hemisphereLight args={["#fffef8", "#778778", 2]} />
-      <directionalLight position={[3, 4, 3]} intensity={2.5} />
-      <directionalLight position={[-3, 2, -2]} intensity={2} />
+      <hemisphereLight args={["#fffef8", "#778778", 1.6]} />
+      <directionalLight position={[3, 4, 3]} intensity={2.2} />
+      <directionalLight position={[-3, 2, -2]} intensity={1.4} />
       <Suspense fallback={null}>
-        <Golfer {...props} feet={feet} />
-        <Ground {...props} feet={feet} />
+        <Golfer {...props} anchors={anchors} />
+        <Ground {...props} anchors={anchors} />
       </Suspense>
-      <CameraRig {...props} />
+      <CameraRig {...props} anchors={anchors} />
       <AdaptiveDpr pixelated />
       <PerformanceMonitor onDecline={() => setDpr(1.25)} />
       {props.perf && <PerfProbe perf={props.perf} />}
