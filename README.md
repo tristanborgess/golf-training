@@ -1,16 +1,17 @@
 # Range Notes
 
-A bilingual (English / Spanish) golf reference for beginner-to-intermediate players who know their clubs and want useful guidance between shots at the range. It opens into two actions: **Set up a club** and **Fix a shot**.
+A bilingual (English / Spanish) golf reference for beginner-to-intermediate players who know their clubs and want useful guidance between shots at the range. It opens into an interactive 3D swing viewer. The menu holds setup guidance, shot diagnosis, your bag and settings.
 
-Range Notes is a static, offline-capable web app. There are no accounts, no database and no analytics provider. Everything you enter (handedness, selected club, personal carry distances, units, appearance) stays in your browser.
+Range Notes is a static, offline-capable web app. There are no accounts, no database and no analytics provider. Everything you enter (handedness, selected club, personal carry distances, units, appearance, overlays, view and playback speed) stays in your browser.
 
 The approved product specification is in [PRODUCT.md](PRODUCT.md). The implementation record is in [docs/implementation-notes.md](docs/implementation-notes.md). The two research reports in `docs/` are reference material, not instructions.
 
 ## What it does
 
 - **Fifteen clubs**: driver, 3W, 5W, combined 3H/4H, 4–9 irons, PW/GW/SW/LW, putter. Four shared instructional systems with club-specific adjustments. Wedges also get chip, pitch and bunker variants.
+- **Interactive swing**: full swing, chip and putt motion, five named phases, camera presets and free orbit, half-speed playback, authored pressure heatmap and skeleton overlays. A poster fallback keeps phase guidance available without WebGL.
 - **Setup guidance** per club: stance, ball position, posture, pressure, grip, tempo, intent and use, plus an editable personal carry and optional qualified reference distances.
-- **Seven technical drawings**, rendered as live SVG with translated labels and correct lead/trail orientation for right- and left-handers: stance & ball (top view), face-on, down the line, five-frame swing sequence, face & path, clean contact (low point), and grip.
+- **Six technical drawings**, rendered as live SVG with translated labels and correct lead/trail orientation for right- and left-handers: stance & ball (top view), face-on, down the line, face & path, clean contact (low point), and grip.
 - **Shot diagnosis** that asks start direction and curve separately, defines the terms, covers nine flights, and never reverses what the player literally saw. Contact, driver, chip, bunker, putt, distance and trajectory faults appear only when they apply to the selected club and shot.
 - **One mechanism, one correction, one drill first**; detail, alternatives and direct citations behind disclosures. A methodology page lists every source.
 - **Yards or metres** with metres as the stable canonical unit for saved carries. Per-club editing and a complete bag editor.
@@ -61,14 +62,21 @@ src/
   app/page.tsx                 language redirect for /
   app/[locale]/                layout, home page, sources (methodology) page
   app/globals.css              design tokens and all component styles
-  components/range-notes.tsx   the tool: setup, diagnosis, bag, settings
-  components/golf-diagrams.tsx the seven SVG drawing families
+  components/range-notes.tsx   preferences, offline and viewer composition
+  components/golf-diagrams.tsx the six SVG drawing families
+  components/swing-viewer/     lazy 3D scene, player store and accessible controls
+  components/menu-sheet.tsx    reference navigation
+  components/range-details.tsx diagnosis, glossary and carry forms
+  lib/swing.ts                phase, cue and authored pressure interface
+  lib/swing-data.ts           motion metadata and region mapping
   lib/golf.ts                  clubs, setups, faults, flight logic, preferences schema
   lib/golf.test.ts             unit tests for the model
 scripts/
+  build-model.py, build-model.md reproducible Blender conversion and asset notes
   prepare-offline.mjs          builds out/precache.json after export
   serve-static.ts              Bun static server for out/
 public/
+  models/                      compressed mannequin and clip-specific posters
   sw.js                        service worker with an explicit same-origin precache
   manifest.webmanifest, icons  installable app metadata
   images/                      approved editorial illustrations
@@ -88,3 +96,11 @@ locales/                       next-intl messages retained from the boilerplate
 ## Provenance
 
 Built on the [Vibe Code Boilerplate](https://github.com/SwapidoApp/vibe-code-boilerplate) (Next.js App Router, Tailwind v4, next-intl, next-themes, Biome, Bun). Range Notes is a provisional name.
+
+## Swing viewer
+
+Share a pose with `/en/?club=7iron&look=front&phase=2`. Existing `?view=fix`, `bag`, `settings` and `setup` links open details above the viewer. Preferences migrate in place to version 2 under `range-notes:v1`.
+
+Focus the canvas and use arrow keys to orbit, +/− to zoom. View tabs also support arrow keys. Phase chips, scrubber and transport work with keyboard or touch; transport arrows step phases and Space toggles playback. Explicit reduced-motion playback defaults to half speed on a new device.
+
+Pressure is an authored coaching model, **not a measurement**. Pitch and bunker currently use the short chip clip and say so. See [the spike](docs/spike-3d-golfer.md) and [asset pipeline](scripts/build-model.md) for selections, budgets and remaining physical-device checks. Add `?poster` to exercise fallback or `?debug` to expose the read-only `window.__rangeNotesViewer` snapshot in a production build.

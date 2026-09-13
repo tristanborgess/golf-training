@@ -1,5 +1,5 @@
 import { ArrowLeft, ArrowUpRight, Flag } from "lucide-react";
-import { Glossary } from "@/components/range-notes";
+import { Glossary } from "@/components/range-details";
 import { type Language, sources } from "@/lib/golf";
 
 export default async function SourcesPage({

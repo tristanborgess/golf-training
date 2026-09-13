@@ -17,7 +17,6 @@ export type Drawing =
   | "overhead"
   | "face"
   | "line"
-  | "sequence"
   | "flight"
   | "impact"
   | "grip";
@@ -25,7 +24,6 @@ export const drawingNames: Record<Drawing, Copy> = {
   overhead: c("Stance & ball", "Postura y bola"),
   face: c("Face-on", "De frente"),
   line: c("Down the line", "Desde atrás"),
-  sequence: c("Swing sequence", "Secuencia"),
   flight: c("Face & path", "Cara y trayectoria"),
   impact: c("Clean contact", "Contacto limpio"),
   grip: c("Grip", "Agarre"),
@@ -41,10 +39,6 @@ export const viewpoints: Record<Drawing, Copy> = {
     "From behind · looking at the target",
     "Desde atrás · mirando al objetivo",
   ),
-  sequence: c(
-    "Front view · five moments of one swing",
-    "Vista frontal · cinco momentos de un swing",
-  ),
   flight: c("Top view · you at the bottom", "Vista superior · tú abajo"),
   impact: c(
     "Side view · target to the right",
@@ -59,63 +53,12 @@ const sideViewpoint = c(
   "Side view · watching the flight",
   "Vista lateral · viendo el vuelo",
 );
-export const phaseNames = [
-  c("Address", "Colocación"),
-  c("Takeaway", "Inicio"),
-  c("Top", "Arriba"),
-  c("Impact", "Impacto"),
-  c("Finish", "Final"),
-];
-const fullCues = [
-  c(
-    "Balanced and relaxed, ball in position.",
-    "Equilibrado y relajado, bola en su sitio.",
-  ),
-  c(
-    "Club, arms and chest start back together.",
-    "Palo, brazos y pecho inician juntos.",
-  ),
-  c(
-    "Chest turned, pressure into the trail side.",
-    "Pecho girado, presión en el lado trasero.",
-  ),
-  c(
-    "Pressure on the lead foot, hands ahead of the ball.",
-    "Presión en el pie delantero, manos por delante de la bola.",
-  ),
-  c(
-    "Balanced on the lead leg, chest facing the target.",
-    "Equilibrado sobre la pierna delantera, pecho hacia el objetivo.",
-  ),
-];
-const partialTopCue = c(
-  "A shorter turn; pressure stays forward.",
-  "Giro más corto; la presión se mantiene adelante.",
-);
-const puttCues = [
-  c(
-    "Eyes over the ball, arms hanging.",
-    "Ojos sobre la bola, brazos colgando.",
-  ),
-  c("Shoulders rock the putter back.", "Los hombros llevan el putter atrás."),
-  c("A brief, unhurried pause.", "Una pausa breve y sin prisa."),
-  c(
-    "Face square, stroke through the ball.",
-    "Cara cuadrada, el golpe atraviesa la bola.",
-  ),
-  c(
-    "Hold the finish and let the ball roll.",
-    "Mantén el final y deja rodar la bola.",
-  ),
-];
-
 type Props = {
   kind: Drawing;
   club: Club;
   hand: Hand;
   lang: Language;
   shot?: Shot;
-  frame?: number;
   start?: Direction;
   curve?: Direction;
   fault?: string;
@@ -186,7 +129,6 @@ function DiagramContent({
   hand,
   lang,
   shot = "stock",
-  frame = 0,
   start = 0,
   curve = 0,
   fault,
@@ -218,16 +160,6 @@ function DiagramContent({
       "The toe line runs parallel to the target line. Arms hang with space from the body.",
       "La línea de los pies es paralela al objetivo. Los brazos cuelgan con espacio respecto al cuerpo.",
     ),
-    sequence:
-      club.system === "putter"
-        ? c(
-            "A compact putting stroke: set up, back, pause, contact, through. No full-swing weight shift.",
-            "Un putt compacto: postura, atrás, pausa, contacto y adelante. Sin transferencia de peso de swing completo.",
-          )
-        : c(
-            "Five schematic checkpoints of one swing. Your proportions and comfortable range of movement will differ.",
-            "Cinco puntos de referencia esquemáticos de un swing. Tus proporciones y rango cómodo de movimiento serán distintos.",
-          ),
     flight: sideView
       ? c(
           "Solid orange is the flight you reported; dashed blue is a comparison, not a prescribed height.",
@@ -305,7 +237,6 @@ function DiagramContent({
         {kind === "overhead" && <Overhead {...ctx} />}
         {kind === "face" && <FaceOn {...ctx} />}
         {kind === "line" && <DownTheLine {...ctx} />}
-        {kind === "sequence" && <Sequence {...ctx} frame={frame} />}
         {kind === "flight" &&
           (sideView ? (
             <Trajectory {...ctx} high={fault === "high"} />
@@ -778,213 +709,6 @@ function DownTheLine(ctx: Ctx) {
         className="diagram-small"
       >
         {text("TARGET", "OBJETIVO")}
-      </text>
-    </>
-  );
-}
-
-type Pose = {
-  head: [number, number];
-  shT: [number, number];
-  shL: [number, number];
-  hipT: [number, number];
-  hipL: [number, number];
-  kneeT: [number, number];
-  kneeL: [number, number];
-  ankT: [number, number];
-  ankL: [number, number];
-  hands: [number, number];
-  club: [number, number];
-};
-const address: Pose = {
-  head: [0, 42],
-  shT: [-36, 90],
-  shL: [36, 90],
-  hipT: [-22, 160],
-  hipL: [22, 160],
-  kneeT: [-30, 215],
-  kneeL: [30, 215],
-  ankT: [-40, 280],
-  ankL: [40, 280],
-  hands: [6, 186],
-  club: [8, 276],
-};
-const fullSwing: Pose[] = [
-  address,
-  {
-    ...address,
-    shT: [-34, 92],
-    shL: [38, 88],
-    hands: [-40, 184],
-    club: [-82, 172],
-  },
-  {
-    ...address,
-    head: [-2, 42],
-    shT: [-32, 86],
-    shL: [32, 100],
-    hipT: [-26, 160],
-    hipL: [18, 160],
-    kneeT: [-34, 214],
-    hands: [-40, 66],
-    club: [40, 30],
-  },
-  {
-    ...address,
-    head: [-4, 44],
-    shT: [-30, 92],
-    shL: [40, 90],
-    hipT: [-12, 158],
-    hipL: [34, 156],
-    kneeT: [-14, 218],
-    kneeL: [36, 214],
-    hands: [22, 182],
-    club: [8, 276],
-  },
-  {
-    head: [12, 42],
-    shT: [-2, 90],
-    shL: [28, 88],
-    hipT: [10, 158],
-    hipL: [34, 156],
-    kneeT: [-4, 222],
-    kneeL: [36, 214],
-    ankT: [-26, 278],
-    ankL: [40, 280],
-    hands: [14, 70],
-    club: [-40, 34],
-  },
-];
-const puttStroke: Pose[] = [
-  address,
-  { ...address, hands: [-14, 188], club: [-14, 278] },
-  { ...address, hands: [-22, 190], club: [-24, 278] },
-  { ...address, hands: [4, 186], club: [6, 276] },
-  { ...address, hands: [24, 188], club: [28, 274] },
-];
-const mix = (a: Pose, b: Pose, t: number): Pose =>
-  Object.fromEntries(
-    (Object.keys(a) as (keyof Pose)[]).map((k) => [
-      k,
-      [a[k][0] + (b[k][0] - a[k][0]) * t, a[k][1] + (b[k][1] - a[k][1]) * t],
-    ]),
-  ) as Pose;
-
-function Sequence(ctx: Ctx & { frame: number }) {
-  const { club, shot, flip, lang, frame } = ctx;
-  const putt = club.system === "putter",
-    partial = shot !== "stock",
-    driver = club.system === "driver";
-  const poses = putt
-    ? puttStroke
-    : partial
-      ? fullSwing.map((p) => ({
-          ...mix(address, p, 0.55),
-          ankT: address.ankT,
-          ankL: address.ankL,
-        }))
-      : fullSwing;
-  const ballX = driver ? 30 : putt ? 8 : 8;
-  const cellW = 124,
-    s = 0.74;
-  const cue = putt
-    ? puttCues[frame]
-    : partial && frame === 2
-      ? partialTopCue
-      : fullCues[frame];
-  return (
-    <>
-      {poses.map((p, i) => {
-        const cx = 10 + cellW * i + cellW / 2;
-        const selected = i === frame;
-        const onGround = p.club[1] > 260;
-        const ball =
-          putt && i === 4 ? [58, 282] : i === 4 ? null : [ballX, 282];
-        return (
-          <g key={phaseNames[i].en}>
-            {selected && (
-              <rect
-                x={cx - cellW / 2 + 2}
-                y="52"
-                width={cellW - 4}
-                height="254"
-                rx="10"
-                fill={fill}
-                opacity="0.55"
-              />
-            )}
-            <g opacity={selected ? 1 : 0.42}>
-              <path d={`M ${cx - 50} 262 H ${cx + 50}`} stroke={quiet} />
-              <g
-                transform={`translate(${cx} 262) scale(${flip ? -s : s} ${s}) translate(0 -280)`}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                fill="none"
-              >
-                <path
-                  d={`M ${p.hipT[0]} ${p.hipT[1]} L ${p.kneeT[0]} ${p.kneeT[1]} L ${p.ankT[0]} ${p.ankT[1]}`}
-                  stroke={ink}
-                  strokeWidth="12"
-                />
-                <path
-                  d={`M ${p.hipL[0]} ${p.hipL[1]} L ${p.kneeL[0]} ${p.kneeL[1]} L ${p.ankL[0]} ${p.ankL[1]}`}
-                  stroke={ink}
-                  strokeWidth="12"
-                />
-                <path
-                  d={`M ${p.shT[0]} ${p.shT[1]} L ${p.shL[0]} ${p.shL[1]} L ${p.hipL[0]} ${p.hipL[1]} L ${p.hipT[0]} ${p.hipT[1]} Z`}
-                  fill={fill}
-                  stroke={ink}
-                  strokeWidth="3"
-                />
-                <circle
-                  cx={p.head[0]}
-                  cy={p.head[1]}
-                  r="24"
-                  fill={paper}
-                  stroke={ink}
-                  strokeWidth="3"
-                />
-                <path
-                  d={`M ${p.shT[0]} ${p.shT[1] + 6} L ${p.hands[0]} ${p.hands[1]} M ${p.shL[0]} ${p.shL[1] + 6} L ${p.hands[0]} ${p.hands[1]}`}
-                  stroke={ink}
-                  strokeWidth="8"
-                />
-                <path
-                  d={`M ${p.hands[0]} ${p.hands[1]} L ${onGround ? p.club[0] - 6 : p.club[0]} ${p.club[1]}`}
-                  stroke={green}
-                  strokeWidth="5"
-                />
-                {onGround ? (
-                  <path
-                    d={`M ${p.club[0] - 18} 278 H ${p.club[0]}`}
-                    stroke={ink}
-                    strokeWidth="10"
-                  />
-                ) : (
-                  <circle cx={p.club[0]} cy={p.club[1]} r="7" fill={ink} />
-                )}
-                {ball && (
-                  <circle cx={ball[0] + 6} cy={ball[1]} r="7" fill={orange} />
-                )}
-              </g>
-            </g>
-            <text
-              x={cx}
-              y="300"
-              textAnchor="middle"
-              fill={selected ? green : undefined}
-              className={
-                selected ? "diagram-small diagram-strong" : "diagram-small"
-              }
-            >
-              {`${i + 1} · ${phaseNames[i][lang].toUpperCase()}`}
-            </text>
-          </g>
-        );
-      })}
-      <text x="320" y="340" textAnchor="middle" className="diagram-caption">
-        {`${String(frame + 1).padStart(2, "0")} — ${cue[lang]}`}
       </text>
     </>
   );

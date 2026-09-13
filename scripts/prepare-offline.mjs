@@ -21,9 +21,12 @@ const files = (await walk("out")).filter(
     !file.endsWith(".DS_Store"),
 );
 const hash = createHash("sha256");
+let totalBytes = 0;
 for (const file of files.sort()) {
   hash.update(file);
-  hash.update(await readFile(file));
+  const bytes = await readFile(file);
+  totalBytes += bytes.length;
+  hash.update(bytes);
 }
 const version = hash.digest("hex").slice(0, 12);
 const urls = files.map(
@@ -35,3 +38,7 @@ await writeFile("out/sw.js", source.replace("__BUILD_VERSION__", version));
 console.log(
   `Prepared ${urls.length} local files for offline use (${version}).`,
 );
+
+console.log(`Offline download: ${(totalBytes / 1024 / 1024).toFixed(2)} MiB.`);
+if (totalBytes > 6 * 1024 * 1024)
+  console.warn("Offline precache exceeds the 6 MiB advisory budget.");

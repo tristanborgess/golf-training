@@ -793,14 +793,20 @@ export function fromMetres(value: number, unit: Unit) {
   return unit === "yd" ? value / 0.9144 : value;
 }
 export type Preferences = {
-  version: 1;
+  version: 2;
+  overlays: { pressure: boolean; skeleton: boolean };
+  look: "front" | "side" | "top" | "back";
+  speed: 1 | 0.5;
   club: string;
   hand: Hand;
   unit: Unit;
   carries: Record<string, number>;
 };
 export const defaults: Preferences = {
-  version: 1,
+  version: 2,
+  overlays: { pressure: false, skeleton: false },
+  look: "front",
+  speed: 1,
   club: "7iron",
   hand: "right",
   unit: "yd",
@@ -810,7 +816,8 @@ export const storageKey = "range-notes:v1";
 export function parsePreferences(raw: string | null): Preferences {
   try {
     const p = JSON.parse(raw ?? "null");
-    if (!p || p.version !== 1) return { ...defaults, carries: {} };
+    if (!p || (p.version !== 1 && p.version !== 2))
+      return { ...defaults, carries: {} };
     const carries: Record<string, number> = {};
     for (const club of clubs) {
       const value = p.carries?.[club.id];
@@ -824,7 +831,16 @@ export function parsePreferences(raw: string | null): Preferences {
         carries[club.id] = value;
     }
     return {
-      version: 1,
+      version: 2,
+      overlays: {
+        pressure: p.version === 2 && p.overlays?.pressure === true,
+        skeleton: p.version === 2 && p.overlays?.skeleton === true,
+      },
+      look:
+        p.version === 2 && ["front", "side", "top", "back"].includes(p.look)
+          ? p.look
+          : "front",
+      speed: p.version === 2 && p.speed === 0.5 ? 0.5 : 1,
       club: clubs.some((c) => c.id === p.club) ? p.club : defaults.club,
       hand: p.hand === "left" ? "left" : "right",
       unit: p.unit === "m" ? "m" : "yd",

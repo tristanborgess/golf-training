@@ -19,7 +19,6 @@ export const drawingNamesForTest = [
   "Stance & ball",
   "Face-on",
   "Down the line",
-  "Swing sequence",
   "Face & path",
   "Clean contact",
   "Grip",
