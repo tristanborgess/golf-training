@@ -26,7 +26,7 @@ The mannequin's `mixamorig1:` bone and vertex-group prefixes are normalized to `
 | Required compression | `EXT_meshopt_compression`, `KHR_mesh_quantization` | Verified in GLB |
 | Three named clips | GLB animation names: `full`, `chip`, `putt` | Verified |
 | Five fallback frames per clip | 15 PNGs under `public/models/poster/` | Files present |
-| Scene ≤8 draw calls | Model has one primitive; scene also draws club, ground, ball and overlays | Runtime total still requires measurement |
+| Scene ≤8 draw calls | Measured in the Playwright suite through `?debug` (headless Chromium, software WebGL, 390×844): 7 draw calls and 23,478 triangles with overlays off; 10–11 draw calls and about 48,250 triangles with pressure and skeleton both on | Within budget; the suite asserts ≤8 plain and ≤14 with both overlays |
 | Precache advisory ≤6 MiB | Latest recorded build: 8.89 MiB, largely existing editorial assets | Above advisory threshold |
 
 The raw export is 1,351,376 bytes and stays in `assets-src/`. Raw FBX and Blender inputs do not ship to the browser. The pipeline and rebuild steps are in [build-model.md](../scripts/build-model.md).
@@ -43,6 +43,12 @@ The pressure legend calls the overlay an authored coaching model. Its region val
 
 Production export, TypeScript, Biome, 11 unit tests and all 12 Playwright tests passed. The browser suite includes software WebGL, both locales/themes, narrow zoom widths, storage migration, offline model reload and forced poster fallback.
 
-The user's phone was unavailable. Phone frame time, memory use, cold/warm load time and the overlay frame-time increase below 20% remain unverified. Measure those on the target phone with both overlays off, each overlay on and both on, recording device, browser, clip, DPR and baseline conditions. Also record the runtime draw-call total for those states. Browser emulation is useful for layout checks but does not substitute for those measurements.
+The user's phone was unavailable. Phone frame time, memory use, cold/warm load time and the overlay frame-time increase below 20% remain unverified. Draw calls and triangles are now measured (table above).
 
-No actual UI variant prototype comparison had been completed at the time of this record. The asset triage and implemented viewer should not be described as such a comparison.
+### Phone measurement procedure
+
+The viewer carries its own instrument, so no desktop debugger is needed. Open the app on the phone with `?debug` appended (for example `http://<mac-ip>:3001/en/?debug` against `bun run start`, or the deployed URL). A small monospace box in the lower-left corner of the viewer shows the running frame rate and frame time (a smoothed average over rendered frames only; idle gaps are ignored because the canvas renders on demand), the draw-call and triangle counts, the effective device pixel ratio and, on Chromium browsers, the JavaScript heap in MB. The same numbers are available as `window.__rangeNotesViewer.perf`.
+
+Record, for the 7-iron full swing at 1× speed, the frame rate and frame time after one complete play in each of four states: overlays off, pressure only, skeleton only, both on. Then repeat once with the putter. Note the phone model, browser, network condition (first load over Wi-Fi versus second load from the precache) and how long the poster stayed visible before the model appeared. The plan's acceptance bar is a frame-time increase of 20% or less with both overlays on, compared with overlays off, and no memory growth across five consecutive plays. If the frame time is poor, `PerformanceMonitor` should already have dropped the DPR to 1.25; the readout shows whether it did.
+
+The chrome comparison was completed afterwards and archived on the `prototype/3d-golfer` branch (`docs/prototype-3d-golfer/README.md`); variant A, the supplied sketch, was retained.

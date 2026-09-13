@@ -7,8 +7,32 @@ import type { Club, Preferences } from "@/lib/golf";
 import { pressureAt } from "@/lib/swing";
 import { CameraRig } from "./camera-rig";
 import { type Colors, Golfer } from "./golfer";
+import type { Perf } from "./perf";
 import type { Player } from "./player-store";
 
+function PerfProbe({ perf }: { perf: Perf }) {
+  const gl = useThree((s) => s.gl);
+  const last = useRef(0);
+  useFrame(() => {
+    const now = performance.now();
+    if (last.current) {
+      const delta = now - last.current;
+      /* Ignore idle gaps: demand rendering stops the loop between interactions. */
+      if (delta < 250)
+        perf.frameMs = perf.frameMs ? perf.frameMs * 0.9 + delta * 0.1 : delta;
+    }
+    last.current = now;
+    perf.frames += 1;
+    perf.calls = gl.info.render.calls;
+    perf.triangles = gl.info.render.triangles;
+    perf.dpr = gl.getPixelRatio();
+    const memory = (
+      performance as Performance & { memory?: { usedJSHeapSize: number } }
+    ).memory;
+    perf.heapMb = memory ? Math.round(memory.usedJSHeapSize / 1048576) : null;
+  });
+  return null;
+}
 function CanvasDescription({ label }: { label: string }) {
   const gl = useThree((s) => s.gl);
   useEffect(() => {
@@ -92,6 +116,7 @@ export default function SwingCanvas(props: {
   onReady: (name: string, duration: number) => void;
   label: string;
   onFailure: () => void;
+  perf?: Perf;
 }) {
   const [dpr, setDpr] = useState(1.5);
   const [feet] = useState(() => new Float32Array(6));
@@ -121,6 +146,7 @@ export default function SwingCanvas(props: {
       <CameraRig {...props} />
       <AdaptiveDpr pixelated />
       <PerformanceMonitor onDecline={() => setDpr(1.25)} />
+      {props.perf && <PerfProbe perf={props.perf} />}
     </Canvas>
   );
 }

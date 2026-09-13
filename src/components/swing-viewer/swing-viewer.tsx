@@ -36,6 +36,7 @@ import {
 } from "@/lib/swing";
 import { clipData } from "@/lib/swing-data";
 import type { Colors } from "./golfer";
+import { emptyPerf, formatPerf } from "./perf";
 import { createPlayer } from "./player-store";
 import { PosterFallback } from "./poster-fallback";
 import { useSwingPlayer } from "./use-swing-player";
@@ -98,7 +99,10 @@ export function SwingViewer({
     [reduced, setReduced] = useState(false),
     [failed, setFailed] = useState(false),
     [ready, setReady] = useState(false),
-    [mounted, setMounted] = useState(false);
+    [mounted, setMounted] = useState(false),
+    [debug, setDebug] = useState(false),
+    [readout, setReadout] = useState("");
+  const [perf] = useState(emptyPerf);
   const duration = useRef(5.8666667),
     clipName = useRef("full"),
     scrubber = useRef<HTMLInputElement>(null);
@@ -126,6 +130,7 @@ export function SwingViewer({
   }, [player, poseRequest]);
   useEffect(() => {
     setMounted(true);
+    setDebug(new URLSearchParams(location.search).has("debug"));
     const mq = matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => setReduced(mq.matches);
     change();
@@ -199,11 +204,12 @@ export function SwingViewer({
     return player.onFrame(update);
   }, [player]);
   useEffect(() => {
-    if (
-      process.env.NODE_ENV === "production" &&
-      !new URLSearchParams(location.search).has("debug")
-    )
-      return;
+    if (!debug) return;
+    const timer = window.setInterval(() => setReadout(formatPerf(perf)), 500);
+    return () => window.clearInterval(timer);
+  }, [debug, perf]);
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" && !debug) return;
     Object.defineProperty(window, "__rangeNotesViewer", {
       configurable: true,
       get: () => {
@@ -217,13 +223,14 @@ export function SwingViewer({
           clipDuration: duration.current,
           pressure: pressureAt(s.spec, s.t),
           ready: ready && !failed,
+          perf: { ...perf },
         };
       },
     });
     return () => {
       Reflect.deleteProperty(window, "__rangeNotesViewer");
     };
-  }, [player, selected, overlays, ready, failed]);
+  }, [player, selected, overlays, ready, failed, debug, perf]);
   const split = leadTrailSplit(spec.pressure[state.phase]);
   const lead = split.lead >= 0.5;
   const pressure = t(
@@ -347,10 +354,16 @@ export function SwingViewer({
                 onReady={onReady}
                 label={`${cue} ${t("Arrow keys orbit; plus and minus zoom.", "Las flechas giran; más y menos acercan o alejan.")}`}
                 onFailure={onFailure}
+                perf={debug ? perf : undefined}
               />
             </CanvasBoundary>
           )}
         </div>
+        {debug && ready && !failed && (
+          <pre className="perf-readout" aria-hidden="true">
+            {readout}
+          </pre>
+        )}
         <div className="overlay-controls">
           {(
             [

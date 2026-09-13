@@ -16,6 +16,7 @@ async function close(page: Page) {
 test("every club plays the expected clip; phase controls, view tabs, orbit, overlays and sharing", async ({
   page,
 }) => {
+  test.slow(); // fifteen clip swaps under software WebGL
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/en/?debug&club=driver&look=top&phase=2");
@@ -321,3 +322,61 @@ for (const lang of ["en", "es"])
         fullPage: true,
       });
     });
+
+test("four camera presets have stable visual smoke coverage", async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/en/?debug");
+  await expect.poll(async () => (await state(page))?.ready).toBe(true);
+  for (const view of ["Front", "Side", "Top", "Back"]) {
+    await page.getByRole("tab", { name: view, exact: true }).click();
+    await expect(page.locator(".viewer-stage")).toHaveScreenshot(
+      `camera-${view.toLowerCase()}.png`,
+      { maxDiffPixelRatio: 0.04, animations: "disabled" },
+    );
+  }
+});
+
+test("debug readout reports rendering cost and the scene stays within its draw-call budget", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/en/?debug&club=7iron");
+  await expect.poll(async () => (await state(page))?.ready).toBe(true);
+  const readout = page.locator(".perf-readout");
+  await expect(readout).toBeVisible();
+  const measure = async () => {
+    await page.getByRole("button", { name: "Play", exact: true }).click();
+    await expect
+      .poll(async () => (await state(page)).perf.frames)
+      .toBeGreaterThan(8);
+    await page.getByRole("button", { name: "Pause", exact: true }).click();
+    return (await state(page)).perf as {
+      frames: number;
+      frameMs: number;
+      calls: number;
+      triangles: number;
+      dpr: number;
+    };
+  };
+  const plain = await measure();
+  expect(plain.calls).toBeGreaterThan(0);
+  expect(plain.calls).toBeLessThanOrEqual(8);
+  expect(plain.triangles).toBeLessThanOrEqual(40000);
+  expect(plain.dpr).toBeGreaterThan(0);
+  await expect(readout).toContainText(/\d+ calls/);
+  for (const name of ["Pressure", "Skeleton"])
+    await page.getByRole("button", { name, exact: true }).click();
+  await page.getByRole("button", { name: "Address", exact: true }).click();
+  const overlays = await measure();
+  expect(overlays.calls).toBeLessThanOrEqual(14);
+  console.log(
+    `draw calls: plain ${plain.calls}, both overlays ${overlays.calls}; triangles ${plain.triangles} / ${overlays.triangles}`,
+  );
+  await page.goto("/en/");
+  await expect(page.locator(".swing-cue")).toBeVisible();
+  expect(await state(page)).toBeUndefined();
+  await expect(page.locator(".perf-readout")).toHaveCount(0);
+});
