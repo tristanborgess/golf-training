@@ -35,3 +35,12 @@ Feedback from the first device run: playback looked like a slideshow, the club s
 - The view tablist is explicit markup rather than Radix Tabs: four tabs control one panel, the viewer stage, which Radix cannot express without four panels.
 - Tests: club selection goes through the menu; the camera smoke test masks the readout and tolerates adaptive-DPR drift; Linux baselines regenerated. 14 of 14 pass on macOS and Linux software WebGL. Draw calls: 7 plain, 10 with both overlays.
 - New dependencies: `@radix-ui/react-toggle`, `@radix-ui/react-toggle-group`. Run `bun install` after pulling.
+
+## Club, ball and phase corrections — 13 September 2026, night
+
+- Ball position per club and shot now comes from `getSetup().ball`, the same value the checklist shows, measured along the line between the feet; the driver's ball sits on a tee. Clubheads are modelled (blade, face and hosel for irons; crown and face for woods; a blade putter) at real sizes.
+- The club is calibrated at address and at impact and blended across the backswing, because the animation's wrists differ between the two frames. Both frames now put the head on the ball.
+- Phase markers were measured from the clubhead path, and each clip is trimmed to the moving part of the capture (`clipData[].trim`), removing the frozen finish that made playback look stuck.
+- Camera presets aim between the chest and the ball and step back so the club stays in frame; the target line extends mainly toward the target so it no longer reads as a shaft in the down-the-line view.
+- Posters are photographed from the live scene with `scripts/build-posters.mjs` (Playwright, transparent background) instead of being rendered in Blender, so the fallback matches the viewer exactly. `?capture` strips the chrome for that script; `?shot=chip|pitch|bunker` selects a wedge shot from the URL.
+- The debug snapshot exposes the scene anchors (feet, ball, forward, target, clubhead), which is how the markers were measured.

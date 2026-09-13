@@ -15,7 +15,8 @@ export function cameraPreset(
 ): [number, number] {
   const [fx, fz] = forward;
   const facing = Math.atan2(fx, fz);
-  const level = Math.PI / 2.12;
+  /* A little above eye level, so the ball and clubhead stay inside the frame. */
+  const level = Math.PI / 2.4;
   switch (look) {
     case "front":
       return [facing, level];
@@ -77,8 +78,11 @@ export function CameraRig({
     const forward: [number, number] =
       anchors[9] || anchors[11] ? [anchors[9], anchors[11]] : [0, 1];
     const [a, p] = cameraPreset(look, forward, hand);
-    void c.setTarget(0, 0.95, 0, false);
-    void c.rotateTo(a, p, !reduced && ready);
+    const smooth = !reduced && ready;
+    /* Aim between the chest and the ball so both stay in frame, then step back enough for the club. */
+    void c.setTarget(anchors[6] * 0.4, 0.8, anchors[8] * 0.4, smooth);
+    void c.rotateTo(a, p, smooth);
+    void c.dollyTo(look === "top" ? 3.4 : 3.9, smooth);
   }, [look, hand, reduced, anchors, ready]);
   return (
     <CameraControls

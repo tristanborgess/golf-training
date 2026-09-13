@@ -26,6 +26,7 @@ import {
   type Preferences,
   parsePreferences,
   type Shot,
+  shotNames,
   storageKey,
   track,
 } from "@/lib/golf";
@@ -99,6 +100,13 @@ export function RangeNotes({ lang }: { lang: Language }) {
       const phase = Number(params.get("phase"));
       if (Number.isInteger(phase) && phase >= 0 && phase <= 4)
         setPoseRequest({ phase: phase as Phase, nonce: 1 });
+      const requestedShot = params.get("shot");
+      if (
+        requestedShot &&
+        requestedShot in shotNames &&
+        isWedge(clubs.find((c) => c.id === parsed.club) ?? clubs[7])
+      )
+        setShot(requestedShot as Shot);
     } catch {
       setStorageError(true);
     }

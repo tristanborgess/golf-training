@@ -1774,3 +1774,14 @@ a svg {
     position: static;
   }
 }
+/* Poster capture: a bare 3:4 canvas on a transparent page. */
+.capture-mode .viewer-stage {
+  height: 640px;
+  width: 480px;
+  margin: 0 auto;
+}
+.capture-mode .overlay-controls,
+.capture-mode .perf-readout,
+.capture-mode .poster-fallback {
+  display: none;
+}

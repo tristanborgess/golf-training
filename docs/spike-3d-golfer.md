@@ -6,15 +6,15 @@ Recorded 13 September 2026. The viewer extends Range Notes' existing interface a
 
 `assets-src/triage.json` inventories all 17 FBX inputs: one skinned mannequin, six drive variants, five chip variants, four putt variants and the separate drive setup. `assets-src/poses.json` records 11 bone-position samples for each of the 16 animation inputs. These records support motion inspection; they are not a coaching validation or a UI variant comparison.
 
-| Runtime clip | Selected source | Source frames at 30 fps | Duration | Phase markers, normalized |
+| Runtime clip | Selected source | Shown window of the capture | Duration | Phase markers, normalized to the window |
 | --- | --- | --- | --- | --- |
-| `full` | `golf-drive-2.fbx` | 1–103 | 3.4 s | 0, .12, .24, .33, 1 |
-| `chip` | `golf-chip-2.fbx` | 1–59 | 58/30 s | 0, .12, .28, .4, 1 |
-| `putt` | `golf-putt-3.fbx` | 1–73 | 2.4 s | 0, .12, .28, .4, 1 |
+| `full` | `golf-drive-2.fbx` | 3% – 62% | 2.0 s | 0, .153, .37, .525, 1 |
+| `chip` | `golf-chip-2.fbx` | 0% – 70% | 1.35 s | 0, .143, .414, .571, 1 |
+| `putt` | `golf-putt-3.fbx` | 0% – 66% | 1.58 s | 0, .152, .394, .606, 1 |
 
-The markers correspond to Address, Takeaway, Top, Impact and Finish. `src/lib/swing-data.ts` is the runtime source of truth. The selected clips provide separate full, short and putting motions. Pitch and bunker use the chip motion with explicit approximation copy. Address holds the first frame of the selected motion; the separate setup clip is retained as an unused source.
+The markers correspond to Address, Takeaway, Top, Impact and Finish. They were measured from the clubhead path in the running viewer (Takeaway where the head first lifts, Top at its highest point, Impact where it meets the ball) rather than estimated by eye; the earlier estimates put Impact a third of a second early. Each capture holds a static finish for the last third of its length, which is cut by the trim window so playback never freezes. `src/lib/swing-data.ts` is the runtime source of truth. The selected clips provide separate full, short and putting motions. Pitch and bunker use the chip motion with explicit approximation copy. Address holds the first frame of the selected motion; the separate setup clip is retained as an unused source.
 
-The mannequin's `mixamorig1:` bone and vertex-group prefixes are normalized to `mixamorig:` during conversion. Runtime matching also tolerates punctuation changes in exported bone names. The model contains one mesh primitive, one matte material and no textures. Club geometry is attached at runtime from the wrist and middle-finger direction.
+The mannequin's `mixamorig1:` bone and vertex-group prefixes are normalized to `mixamorig:` during conversion. Runtime matching also tolerates punctuation changes in exported bone names. The model contains one mesh primitive, one matte material and no textures. Club geometry is attached at runtime to the lead hand. Its transform is solved from the pose rather than read from finger bones: the ball position comes from `getSetup(club, shot).ball` along the line between the feet, the shaft must pass through the hands and rest its sole on the ground at that spot, and the toe points away from the golfer. Because the animation's wrists differ between address and impact, the club is calibrated at both frames and the hand-local offset (and a few centimetres of shaft length) is blended between them across the backswing. Measured result: the head sits 6 cm from the ball at address and at impact for the full swing, 6 cm for the chip and 7 cm for the putt. The reach of long clubs is capped at 0.72 m ahead of the stance because the single captured posture is an iron posture.
 
 ## Asset and rendering budgets
 
@@ -25,8 +25,8 @@ The mannequin's `mixamorig1:` bone and vertex-group prefixes are normalized to `
 | No model textures | GLB JSON: zero textures, one material | Verified |
 | Required compression | `EXT_meshopt_compression`, `KHR_mesh_quantization` | Verified in GLB |
 | Three named clips | GLB animation names: `full`, `chip`, `putt` | Verified |
-| Five fallback frames per clip | 15 PNGs under `public/models/poster/` | Files present |
-| Scene ≤8 draw calls | Measured in the Playwright suite through `?debug` (headless Chromium, software WebGL, 390×844): 7 draw calls and 23,478 triangles with overlays off; 10–11 draw calls and about 48,250 triangles with pressure and skeleton both on | Within budget; the suite asserts ≤8 plain and ≤14 with both overlays |
+| Five fallback frames per clip | 15 PNGs under `public/models/poster/`, photographed from the live scene by `scripts/build-posters.mjs` so they always match the viewer | Files present |
+| Scene ≤8 draw calls | Measured in the Playwright suite through `?debug` (headless Chromium, software WebGL, 390×844): 8 draw calls and about 23,600 triangles with overlays off; 13 draw calls and about 48,400 triangles with pressure and skeleton both on (the clubhead is three meshes) | Within budget; the suite asserts ≤8 plain and ≤14 with both overlays |
 | Precache advisory ≤6 MiB | Latest recorded build: 8.89 MiB, largely existing editorial assets | Above advisory threshold |
 
 The raw export is 1,351,376 bytes and stays in `assets-src/`. Raw FBX and Blender inputs do not ship to the browser. The pipeline and rebuild steps are in [build-model.md](../scripts/build-model.md).

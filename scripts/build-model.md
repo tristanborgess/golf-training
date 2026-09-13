@@ -58,3 +58,7 @@ Inspect the GLB for one mesh primitive, one material, no textures, the three nam
 Compare all 15 posters with their runtime phases. Check wrist attachment, handedness, all camera presets and both overlays. Run `bun run build` to refresh the static export and precache manifest. The precache warns above 6 MiB; its latest recorded total was 8.89 MiB. The model itself is within its byte budget.
 
 Use `?poster` to force the fallback and `?debug` to expose the read-only `window.__rangeNotesViewer` snapshot in a production build. Neither mode provides phone frame-time, memory or load measurements. Physical-phone performance and the overlay overhead threshold remain pending; see [the spike record](../docs/spike-3d-golfer.md).
+
+## Posters
+
+The five fallback frames per clip are no longer rendered in Blender. With a production server running (`bun run start`), run `node scripts/build-posters.mjs` to photograph the live scene at each phase marker into `public/models/poster/`. Set `CHROMIUM_PATH` if Playwright's bundled Chromium is not installed.

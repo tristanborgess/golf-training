@@ -38,7 +38,7 @@ import {
 } from "@/lib/swing";
 import { clipData } from "@/lib/swing-data";
 import { cn } from "@/lib/utils";
-import type { Colors } from "./golfer";
+import { ANCHORS, type Colors } from "./golfer";
 import { emptyPerf, formatPerf } from "./perf";
 import { createPlayer } from "./player-store";
 import { PosterFallback } from "./poster-fallback";
@@ -53,7 +53,8 @@ class CanvasBoundary extends Component<
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch() {
+  componentDidCatch(error: Error) {
+    console.error("Swing viewer 3D failed:", error);
     this.props.onFailure();
   }
   render() {
@@ -106,8 +107,10 @@ export function SwingViewer({
     [ready, setReady] = useState(false),
     [mounted, setMounted] = useState(false),
     [debug, setDebug] = useState(false),
+    [capture, setCapture] = useState(false),
     [readout, setReadout] = useState("");
   const [perf] = useState(emptyPerf);
+  const [anchors] = useState(() => new Float32Array(ANCHORS));
   const duration = useRef(5.8666667),
     clipName = useRef("full"),
     scrubber = useRef<HTMLInputElement>(null);
@@ -136,7 +139,10 @@ export function SwingViewer({
   }, [player, poseRequest]);
   useEffect(() => {
     setMounted(true);
-    setDebug(new URLSearchParams(location.search).has("debug"));
+    const params = new URLSearchParams(location.search);
+    setDebug(params.has("debug"));
+    /* `?capture` strips chrome around the canvas so scripts/build-posters.mjs can photograph it. */
+    setCapture(params.has("capture"));
     const mq = matchMedia("(prefers-reduced-motion: reduce)");
     const change = () => setReduced(mq.matches);
     change();
@@ -234,13 +240,14 @@ export function SwingViewer({
           pressure: pressureAt(s.spec, s.t),
           ready: ready && !failed,
           perf: { ...perf },
+          anchors: Array.from(anchors),
         };
       },
     });
     return () => {
       Reflect.deleteProperty(window, "__rangeNotesViewer");
     };
-  }, [player, selected, overlays, ready, failed, debug, perf]);
+  }, [player, selected, overlays, ready, failed, debug, perf, anchors]);
   const split = leadTrailSplit(spec.pressure[state.phase]);
   const lead = split.lead >= 0.5;
   const pressure = t(
@@ -255,7 +262,7 @@ export function SwingViewer({
   };
   return (
     <section
-      className="swing-viewer"
+      className={cn("swing-viewer", capture && "capture-mode")}
       aria-label={t("Swing viewer", "Visor de swing")}
     >
       <div className="viewer-heading">
@@ -366,6 +373,7 @@ export function SwingViewer({
               <Canvas
                 player={player}
                 club={club}
+                shot={shot}
                 hand={hand}
                 overlays={overlays}
                 colors={colors}
@@ -378,6 +386,7 @@ export function SwingViewer({
                 label={`${cue} ${t("Arrow keys orbit; plus and minus zoom.", "Las flechas giran; más y menos acercan o alejan.")}`}
                 onFailure={onFailure}
                 perf={debug ? perf : undefined}
+                anchors={anchors}
               />
             </CanvasBoundary>
           )}

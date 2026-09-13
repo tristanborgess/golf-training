@@ -84,20 +84,27 @@ export const regionBones: Record<Region, string[]> = {
   head: ["mixamorig:Head"],
 };
 
+/**
+ * Runtime clips. `raw` is the exported animation's full length in seconds; `trim`
+ * is the window actually shown, as fractions of that length (the captures hold a
+ * static finish for a long tail), and `duration` is the trimmed length. Markers are
+ * fractions of the trimmed window, measured from the clubhead path: Takeaway when
+ * the head first lifts, Top at its highest point, Impact where it meets the ball.
+ */
+const clip = (
+  source: string,
+  raw: number,
+  trim: [number, number],
+  markers: [number, number, number],
+) => ({
+  source,
+  raw,
+  trim,
+  duration: raw * (trim[1] - trim[0]),
+  markers: { 0: 0, 1: markers[0], 2: markers[1], 3: markers[2], 4: 1 },
+});
 export const clipData = {
-  full: {
-    source: "golf-drive-2.fbx",
-    duration: 3.4,
-    markers: { 0: 0, 1: 0.12, 2: 0.24, 3: 0.33, 4: 1 },
-  },
-  chip: {
-    source: "golf-chip-2.fbx",
-    duration: 58 / 30,
-    markers: { 0: 0, 1: 0.12, 2: 0.28, 3: 0.4, 4: 1 },
-  },
-  putt: {
-    source: "golf-putt-3.fbx",
-    duration: 2.4,
-    markers: { 0: 0, 1: 0.12, 2: 0.28, 3: 0.4, 4: 1 },
-  },
+  full: clip("golf-drive-2.fbx", 3.4, [0.03, 0.62], [0.153, 0.37, 0.525]),
+  chip: clip("golf-chip-2.fbx", 58 / 30, [0, 0.7], [0.143, 0.414, 0.571]),
+  putt: clip("golf-putt-3.fbx", 2.4, [0, 0.66], [0.152, 0.394, 0.606]),
 };

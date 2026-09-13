@@ -21,19 +21,21 @@ export function PosterFallback({
     <div className="poster-fallback">
       <Image
         src={`/models/poster/${player.getState().spec.clip}/${phase}.png`}
-        width={720}
-        height={960}
+        width={480}
+        height={640}
         alt={label}
         priority
         style={{ transform: hand === "left" ? "scaleX(-1)" : undefined }}
       />
-      {failed && (
-        <p>
-          {lang === "en"
+      <p>
+        {failed
+          ? lang === "en"
             ? "3D unavailable. Use the phases to explore the swing."
-            : "3D no disponible. Explora el swing con las fases."}
-        </p>
-      )}
+            : "3D no disponible. Explora el swing con las fases."
+          : lang === "en"
+            ? "Loading the 3D swing…"
+            : "Cargando el swing en 3D…"}
+      </p>
     </div>
   );
 }
